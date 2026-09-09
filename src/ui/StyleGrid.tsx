@@ -88,7 +88,7 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
         <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
           Color
         </h2>
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1">
           {derived.sku.colorways.map((colorway) => {
             const selected = colorway.id === activeColorwayId
 
@@ -108,7 +108,7 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
                   className="h-5 w-5 shrink-0 rounded-sm border border-black/10"
                   style={{ backgroundColor: colorway.hex }}
                 />
-                <span className="min-w-0 truncate text-[10px] font-medium leading-tight text-stone-700">
+                <span className="text-[11px] font-medium leading-tight text-stone-700">
                   {colorway.name}
                 </span>
               </button>

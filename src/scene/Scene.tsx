@@ -5,6 +5,7 @@ import { MathUtils, Vector3 } from 'three'
 
 import type { DerivedWall } from '../model/types'
 import { inToFt } from '../model/units'
+import { useViewport } from '../store/useViewport'
 import { HumanFigure } from './HumanFigure'
 import { Terrain } from './Terrain'
 import { Wall } from './Wall'
@@ -42,6 +43,8 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
   const camera = useThree((s) => s.camera)
   const controls = useThree((s) => s.controls)
   const aspect = useThree((s) => s.viewport.aspect)
+  const canvasWidth = useThree((s) => s.size.width)
+  const safeWidth = useViewport((s) => s.safeRect.width)
 
   const runFt = inToFt(derived.runLengthIn)
   const heightFt = inToFt(derived.totalHeightIn)
@@ -61,8 +64,17 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
 
     const halfV = MathUtils.degToRad(camera.fov) / 2
     const halfH = Math.atan(Math.tan(halfV) * aspect)
+
+    // The canvas is the whole viewport, but the wall has to land inside the
+    // safe area between the panels (SPEC §13). Safe-area and canvas coordinates
+    // are the same space, so the correction is the plain ratio of the two
+    // widths. Zero means no probe has reported: stacked layout, no panels over
+    // the scene, so the canvas is the safe area.
+    const safeFraction =
+      safeWidth > 0 && canvasWidth > 0 ? safeWidth / canvasWidth : 1
+
     const distance = Math.max(
-      apparentWidthFt / WALL_WIDTH_FRACTION / (2 * Math.tan(halfH)),
+      apparentWidthFt / WALL_WIDTH_FRACTION / (2 * Math.tan(halfH)) / safeFraction,
       MIN_CAMERA_DISTANCE_FT,
     )
 
@@ -78,7 +90,8 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
       orbit.target.copy(target)
       orbit.update()
     }
-  }, [camera, controls, aspect, runFt, heightFt, depthFt])
+    // Dimensions and the safe rect take the same path: one refit, on change.
+  }, [camera, controls, aspect, canvasWidth, safeWidth, runFt, heightFt, depthFt])
 
   return null
 }

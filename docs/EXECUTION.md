@@ -105,6 +105,13 @@ below the fold. A second run of blocks added to that scene would have added
 nothing a visitor could see. **The demo is judged on the first screenshot, so
 the first screenshot is a deliverable.**
 
+**2D: full-bleed layout.** The three column page becomes a full-bleed canvas
+with the two panels floating over it. Layout only: no geometry, no lighting, no
+camera rule changes. It runs before block 3 because it changes the shape of the
+area the camera has to fill, and fitting a camera to a canvas that is about to
+be replaced is work done twice. It also retires the ground plane's visible edge
+at no cost, since the terrain now runs off every edge of the viewport.
+
 **The 90° return moves out of block 2** and into `If time remains`, and enters
 the locked registry now (`90-degree-return`, geometry, 2h) so the roadmap is
 honest whether or not it gets built. It is real geometry work and it is worth
@@ -120,6 +127,17 @@ before lead capture, which is an acceptance criterion and this is not.
 ---
 
 ## Block 3 — lead capture and polish (~1.5h)
+
+**Open with a 20 minute scene polish**, then Supabase insert, form, error states,
+README.
+
+The polish is three named fixes from the 2C screenshot review, and nothing else:
+lower the camera and fit the frustum vertically as well as horizontally; extend
+the retained bank so its side and rear edges leave the frustum; confirm
+`<ContactShadows />` is mounted and reads at the base of the wall. If any one of
+them does not land inside the budget, revert that one and move on. The README
+needs a screenshot and the demo link is the deliverable, so the scene gets one
+bounded pass and then it is done.
 
 Supabase insert, form, error states, README.
 

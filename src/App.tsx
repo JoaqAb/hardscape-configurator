@@ -5,8 +5,23 @@ import { Scene } from './scene/Scene'
 import { useConfigurator } from './store/useConfigurator'
 import { syncUrl } from './store/urlState'
 import { ControlPanel } from './ui/ControlPanel'
+import { SafeAreaProbe } from './ui/SafeAreaProbe'
 import { TakeoffPanel } from './ui/TakeoffPanel'
 import { VersionBadge } from './ui/VersionBadge'
+
+/**
+ * Full bleed at desktop (SPEC §13): the canvas is the viewport and the two
+ * panels float over it as opaque cards, one at each edge.
+ *
+ * The panel layer covers the whole viewport, so it is `pointer-events-none` and
+ * the cards themselves switch it back on. Without that, an invisible sheet would
+ * swallow every orbit drag.
+ *
+ * Below `lg` this collapses back to the stacked layout: an overlay panel on a
+ * 390px screen is the whole screen.
+ */
+const PANEL =
+  'min-h-0 overflow-y-auto bg-white lg:pointer-events-auto lg:w-80 lg:max-h-full lg:self-start lg:rounded-lg lg:border lg:border-stone-200 lg:shadow-xl'
 
 export default function App() {
   const config = useConfigurator((s) => s.config)
@@ -23,19 +38,30 @@ export default function App() {
   }, [config])
 
   return (
-    <div className="flex h-full flex-col bg-stone-100 lg:flex-row">
-      <div className="relative h-[45vh] shrink-0 lg:order-2 lg:h-full lg:flex-1">
+    <div className="flex h-full flex-col bg-stone-100">
+      <div className="relative h-[45vh] shrink-0 lg:fixed lg:inset-0 lg:z-0 lg:h-full">
         <Scene derived={derived} />
-        <VersionBadge />
+        <div className="lg:hidden">
+          <VersionBadge />
+        </div>
       </div>
 
-      <aside className="min-h-0 overflow-y-auto bg-white lg:order-1 lg:w-80 lg:shrink-0 lg:border-r lg:border-stone-200">
-        <ControlPanel derived={derived} />
-      </aside>
+      <div className="flex min-h-0 flex-1 flex-col lg:pointer-events-none lg:fixed lg:inset-0 lg:z-10 lg:flex-row lg:items-stretch lg:p-6">
+        <aside className={PANEL}>
+          <ControlPanel derived={derived} />
+        </aside>
 
-      <aside className="min-h-0 overflow-y-auto border-t border-stone-200 bg-white lg:order-3 lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0">
-        <TakeoffPanel derived={derived} />
-      </aside>
+        {/* The gap between the cards: measured, not assumed, and the only place
+            the version badge can sit without covering either panel. */}
+        <div className="relative hidden lg:mx-6 lg:flex lg:flex-1 lg:items-end lg:justify-end">
+          <SafeAreaProbe />
+          <VersionBadge />
+        </div>
+
+        <aside className={`${PANEL} border-t border-stone-200 lg:border-t`}>
+          <TakeoffPanel derived={derived} />
+        </aside>
+      </div>
     </div>
   )
 }
