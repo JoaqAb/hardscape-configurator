@@ -10,16 +10,25 @@ import { inToFt } from '../model/units'
  * The bank carries lawn on top and cut soil on its sides, which is what makes
  * it read as ground being held back rather than as a slab sitting on a field.
  */
-const GROUND_HALF_FT = 160
+/**
+ * Large enough that the plane's outer edge lands within a degree of the true
+ * horizon at the default framing, so it reads as a horizon rather than as the
+ * straight cut SPEC §8.8 warns about. It is one quad; the size costs nothing.
+ */
+const GROUND_HALF_FT = 4000
 /** Deep enough that its far edge stays out of frame at any wall length. */
 const BANK_DEPTH_FT = 30
 
-const GRASS = '#8d9a80'
-/** The terrace catches more sun than the lawn below it. */
-const TERRACE = '#98a488'
+// Turf is background. It occupies far more pixels than the product does, so it
+// is kept dark and low in chroma: the wall face has to be the lightest and
+// highest-contrast thing in the frame (SPEC §13).
+const GRASS = '#79806e'
+/** Kept a shade under the lawn: the top of the fill is the one part of the job
+ *  nobody wants to look at, so it must not be the brightest thing up there. */
+const TERRACE = '#6f7666'
 /** Only the face the wall hides is a fresh cut; the rest of the bank is turfed. */
-const BANK_SIDE = '#818e75'
-const SOIL = '#7a6e58'
+const BANK_SIDE = '#666d5d'
+const SOIL = '#6b6152'
 
 export function Terrain({ derived }: { derived: DerivedWall }) {
   const runFt = inToFt(derived.runLengthIn)

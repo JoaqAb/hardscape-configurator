@@ -84,39 +84,35 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
   const runFt = inToFt(config.runLengthIn)
 
   return (
-    <div className="flex flex-col gap-6 p-4">
-      <header>
-        <h1 className="text-base font-semibold text-stone-900">
+    <div className="flex min-h-full flex-col">
+      <div className="flex flex-col gap-3 p-3">
+        <h1 className="text-sm font-semibold text-stone-900">
           Retaining Wall Configurator
         </h1>
-        <p className="mt-0.5 text-xs text-stone-500">
-          Choose a style and color, then size the wall.
-        </p>
-      </header>
 
-      <ProductFamilyTabs />
+        <ProductFamilyTabs />
 
-      <StyleGrid derived={derived} />
+        <StyleGrid derived={derived} />
 
-      <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
-          Presets
-        </h2>
-        <div className="flex flex-col gap-1">
+        <section>
+          <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Presets
+          </h2>
+          <div className="flex flex-col gap-1">
           {PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
               onClick={() => applyPreset(preset.id)}
-              className="rounded-md border border-stone-200 px-2.5 py-1.5 text-left text-xs text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
+              className="rounded border border-stone-200 px-2.5 py-1 text-left text-xs text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
             >
               {preset.label}
             </button>
           ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <div className="space-y-4 border-t border-stone-200 pt-5">
+        <div className="space-y-3 border-t border-stone-200 pt-3">
         <Field label="Wall length" value={formatFeetInches(config.runLengthIn)}>
           <input
             type="range"
@@ -157,16 +153,22 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
         </label>
       </div>
 
-      {/* Counts live in the takeoff panel; repeating them here would only give
-          the same number two homes. */}
-      <dl className="grid grid-cols-2 gap-y-1.5 border-t border-stone-200 pt-4 text-xs">
-        <dt className="text-stone-500">Finished height</dt>
-        <dd className="text-right font-medium tabular-nums text-stone-800">
-          {formatFeetInches(derived.totalHeightIn)}
-        </dd>
-      </dl>
+      </div>
 
-      <CopyLinkButton />
+      {/* Pinned to the foot of the column, outside the scroll. §12 calls this
+          the bridge to lead capture; whether it is reachable must not depend on
+          where the scroll happens to be, now or after anything else is added. */}
+      <div className="sticky bottom-0 mt-auto space-y-2 border-t border-stone-200 bg-white p-3">
+        {/* Counts live in the takeoff panel; the finished dimension belongs
+            with the action, because it is what the customer is about to share. */}
+        <dl className="grid grid-cols-2 text-xs">
+          <dt className="text-stone-500">Finished height</dt>
+          <dd className="text-right font-medium tabular-nums text-stone-800">
+            {formatFeetInches(derived.totalHeightIn)}
+          </dd>
+        </dl>
+        <CopyLinkButton />
+      </div>
     </div>
   )
 }

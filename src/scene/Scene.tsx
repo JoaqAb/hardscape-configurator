@@ -9,18 +9,34 @@ import { HumanFigure } from './HumanFigure'
 import { Terrain } from './Terrain'
 import { Wall } from './Wall'
 
-/** Three-quarter view from slightly above eye level. */
-const VIEW_DIRECTION = new Vector3(0.46, 0.27, 0.85).normalize()
-/** The scale figure has to stay in frame even when the wall is one course. */
-const MIN_FRAMED_HEIGHT_FT = 6.4
+/**
+ * Default framing (SPEC §13). The wall is the subject: low enough that the
+ * visitor is not looking at the top of the retained fill, and turned off the
+ * face far enough that the face, one end, the running bond and the setback all
+ * read at once. It is how a mason photographs a finished wall.
+ */
+const VIEW_ELEVATION_DEG = 17
+const VIEW_AZIMUTH_DEG = 30
+/** How much of the canvas width the wall should span. */
+const WALL_WIDTH_FRACTION = 0.68
+const MIN_CAMERA_DISTANCE_FT = 14
+
+const BACKGROUND = '#dcdbd7'
+
+function viewDirection(): Vector3 {
+  const elevation = MathUtils.degToRad(VIEW_ELEVATION_DEG)
+  const azimuth = MathUtils.degToRad(VIEW_AZIMUTH_DEG)
+  return new Vector3(
+    Math.sin(azimuth) * Math.cos(elevation),
+    Math.sin(elevation),
+    Math.cos(azimuth) * Math.cos(elevation),
+  )
+}
 
 /**
- * Framing (SPEC §13). <Bounds fit clip observe> is the spec's first choice, but
- * it fought OrbitControls exactly as §13 warned it might: Bounds wants to own
- * the control target and the explicit target we need for a wall that starts at
- * the origin pulls against it, which tilted the camera off the subject. So we
- * take the documented fallback and place the camera ourselves, once, whenever
- * the dimensions change — never per frame.
+ * Places the camera from the wall's own bounding box, once per dimension
+ * change and never per frame. <Bounds> is not used: SPEC §13 documents that it
+ * fights OrbitControls over the target, and it did.
  */
 function CameraRig({ derived }: { derived: DerivedWall }) {
   const camera = useThree((s) => s.camera)
@@ -28,28 +44,32 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
   const aspect = useThree((s) => s.viewport.aspect)
 
   const runFt = inToFt(derived.runLengthIn)
-  const heightFt = Math.max(inToFt(derived.totalHeightIn), MIN_FRAMED_HEIGHT_FT)
+  const heightFt = inToFt(derived.totalHeightIn)
   const depthFt = inToFt(derived.sku.depthIn + derived.topSetbackIn)
 
   useLayoutEffect(() => {
     if (!('isPerspectiveCamera' in camera) || !camera.isPerspectiveCamera) return
 
-    // Frame the wall plus a little room for the scale figure beside it.
-    const framedWidth = runFt + 5
-    const target = new Vector3(runFt / 2, heightFt * 0.42, -depthFt / 2)
-    const radius =
-      Math.hypot(framedWidth, heightFt, depthFt + 2) / 2 + heightFt * 0.1
+    // The target is the wall's box, not the terrain's.
+    const target = new Vector3(runFt / 2, heightFt / 2, -depthFt / 2)
 
-    // Fit on whichever axis is tighter, so a long wall does not run off the
-    // sides of a wide viewport.
+    // Turned off the face, the run foreshortens and the end wall starts to
+    // show, so the silhouette we actually have to fit is neither one alone.
+    const azimuth = MathUtils.degToRad(VIEW_AZIMUTH_DEG)
+    const apparentWidthFt =
+      runFt * Math.cos(azimuth) + depthFt * Math.sin(azimuth)
+
     const halfV = MathUtils.degToRad(camera.fov) / 2
     const halfH = Math.atan(Math.tan(halfV) * aspect)
-    const distance = radius / Math.sin(Math.min(halfV, halfH))
+    const distance = Math.max(
+      apparentWidthFt / WALL_WIDTH_FRACTION / (2 * Math.tan(halfH)),
+      MIN_CAMERA_DISTANCE_FT,
+    )
 
     // Known false positive: oxlint's react/immutability flags R3F's imperative camera API, and neither oxlint-disable nor eslint-disable suppresses it.
-    camera.position.copy(target).addScaledVector(VIEW_DIRECTION, distance)
+    camera.position.copy(target).addScaledVector(viewDirection(), distance)
     camera.near = Math.max(distance / 200, 0.1)
-    camera.far = distance * 8
+    camera.far = distance * 12
     camera.updateProjectionMatrix()
     camera.lookAt(target)
 
@@ -65,16 +85,16 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
 
 /**
  * Lighting is entirely local (SPEC §13): no <Environment>, no HDRI, nothing
- * fetched from a CDN at runtime. A demo that goes dark because someone else's
- * network hiccuped is not worth the marginal gain on matte concrete.
+ * fetched from a CDN at runtime.
+ *
+ * The key is deliberately low and well off to one side. A high key flattens the
+ * face; a raking one lets the 0.25" joint reveal cast the shadow line that
+ * makes the running bond and the setback legible.
  */
 function Rig({ derived }: { derived: DerivedWall }) {
   const runFt = inToFt(derived.runLengthIn)
   const heightFt = inToFt(derived.totalHeightIn)
   const centreX = runFt / 2
-
-  // The shadow camera is fitted to the wall, so the map's resolution is spent
-  // on the subject rather than on empty ground.
   const extent = Math.max(runFt, heightFt) * 0.7 + 10
 
   return (
@@ -83,8 +103,8 @@ function Rig({ derived }: { derived: DerivedWall }) {
 
       <directionalLight
         castShadow
-        position={[centreX - runFt * 0.5, heightFt + extent * 0.8, extent * 0.9]}
-        intensity={1.15}
+        position={[centreX - runFt * 0.75, heightFt + extent * 0.35, extent * 0.85]}
+        intensity={1.25}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0006}
         shadow-camera-left={-extent}
@@ -92,15 +112,15 @@ function Rig({ derived }: { derived: DerivedWall }) {
         shadow-camera-top={extent}
         shadow-camera-bottom={-extent}
         shadow-camera-near={0.5}
-        shadow-camera-far={extent * 5}
+        shadow-camera-far={extent * 6}
         target-position={[centreX, heightFt / 2, 0]}
       />
 
       {/* Rim light from the opposite side, dim: it separates the wall from the
-          fill behind it without casting a second set of shadows. */}
+          bank behind it without casting a second set of shadows. */}
       <directionalLight
         position={[centreX + runFt * 0.7, heightFt + 8, -extent]}
-        intensity={0.28}
+        intensity={0.26}
       />
     </>
   )
@@ -111,13 +131,15 @@ export function Scene({ derived }: { derived: DerivedWall }) {
 
   return (
     <Canvas flat shadows dpr={[1, 2]} camera={{ fov: 38, position: [0, 8, 40] }}>
-      <color attach="background" args={['#dcdbd7']} />
+      <color attach="background" args={[BACKGROUND]} />
 
       <Rig derived={derived} />
       <CameraRig derived={derived} />
 
       <Wall derived={derived} />
-      <HumanFigure position={[runFt + 2.4, 0, 5.5]} />
+      {/* In front of the wall, on the low ground, a quarter of the way along:
+          far enough from the end that there is no doubt which side it is on. */}
+      <HumanFigure position={[runFt * 0.25, 0, 5]} />
       <Terrain derived={derived} />
 
       <ContactShadows
@@ -125,17 +147,17 @@ export function Scene({ derived }: { derived: DerivedWall }) {
         scale={Math.max(runFt, 22) * 1.8}
         resolution={1024}
         blur={2.2}
-        opacity={0.32}
+        opacity={0.34}
         far={10}
       />
 
       <OrbitControls
         makeDefault
-        minPolarAngle={0.2}
-        maxPolarAngle={Math.PI / 2 - 0.05}
+        minPolarAngle={MathUtils.degToRad(55)}
+        maxPolarAngle={MathUtils.degToRad(88)}
         enablePan={false}
         minDistance={6}
-        maxDistance={400}
+        maxDistance={500}
       />
     </Canvas>
   )

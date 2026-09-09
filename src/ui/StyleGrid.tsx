@@ -23,9 +23,9 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
   const activeColorwayId = derived.colorway.id
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
+        <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
           Style
         </h2>
         <div className="grid grid-cols-1 gap-2">
@@ -41,14 +41,14 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
                 type="button"
                 onClick={() => setSkuId(sku.id)}
                 aria-pressed={selected}
-                className={`flex items-center gap-3 rounded-md border p-2 text-left transition-colors ${
+                className={`flex items-center gap-2.5 rounded-md border px-2 py-1 text-left transition-colors ${
                   selected
                     ? 'border-accent bg-accent-soft'
                     : 'border-stone-200 bg-white hover:border-stone-300'
                 }`}
               >
                 <span
-                  className="h-10 w-14 shrink-0 rounded border border-black/10"
+                  className="h-8 w-12 shrink-0 rounded border border-black/10"
                   style={{ backgroundColor: preview.hex }}
                 />
                 <span className="min-w-0">
@@ -63,23 +63,21 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
             )
           })}
 
+        </div>
+
+        <div className="mt-1 flex flex-wrap gap-1">
           {WALL_CATALOG.filter(isLockedStyle).map((entry) => (
             <LockedControl
               key={entry.id}
               estimateHours={entry.estimateHours}
-              className="rounded-md border border-stone-200 p-2"
+              className="rounded border border-stone-200 px-1.5 py-1"
             >
               <span
-                className="h-10 w-14 shrink-0 rounded border border-black/10"
+                className="h-4 w-6 shrink-0 rounded-sm border border-black/10"
                 style={{ backgroundColor: entry.colorHex }}
               />
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-stone-700">
-                  {entry.name}
-                </span>
-                <span className="block text-xs text-stone-500">
-                  Awaiting SKU sheet
-                </span>
+              <span className="text-[11px] leading-none text-stone-600">
+                {entry.name}
               </span>
             </LockedControl>
           ))}
@@ -87,10 +85,10 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
+        <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
           Color
         </h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-1">
           {derived.sku.colorways.map((colorway) => {
             const selected = colorway.id === activeColorwayId
 
@@ -100,17 +98,17 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
                 type="button"
                 onClick={() => setColorwayId(colorway.id)}
                 aria-pressed={selected}
-                className={`flex items-center gap-2 rounded-md border p-1.5 text-left transition-colors ${
+                className={`flex items-center gap-1.5 rounded border px-1.5 py-1 text-left transition-colors ${
                   selected
                     ? 'border-accent bg-accent-soft'
                     : 'border-stone-200 bg-white hover:border-stone-300'
                 }`}
               >
                 <span
-                  className="h-7 w-7 shrink-0 rounded border border-black/10"
+                  className="h-5 w-5 shrink-0 rounded-sm border border-black/10"
                   style={{ backgroundColor: colorway.hex }}
                 />
-                <span className="min-w-0 truncate text-xs font-medium text-stone-700">
+                <span className="min-w-0 truncate text-[10px] font-medium leading-tight text-stone-700">
                   {colorway.name}
                 </span>
               </button>

@@ -42,6 +42,7 @@ export const FEATURES: Feature[] = [
   { id: 'stone-veneer', label: 'Stone Veneer & Facade', group: 'family', locked: true, estimateHours: 8 },
 
   { id: 'curved-wall', label: 'Curved wall', group: 'geometry', locked: true, estimateHours: 3 },
+  { id: '90-degree-return', label: '90° return / L-shaped wall', group: 'geometry', locked: true, estimateHours: 2 },
   { id: 'terraced', label: 'Terraced / multi-tier', group: 'geometry', locked: true, estimateHours: 4 },
   { id: 'seat-wall', label: 'Seat wall with caps', group: 'geometry', locked: true, estimateHours: 2 },
   { id: 'corner-types', label: 'Corner types (inside / outside / 45°)', group: 'geometry', locked: true, estimateHours: 2 },
