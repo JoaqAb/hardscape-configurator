@@ -18,8 +18,8 @@ export const CAP_FRONT_OVERHANG_IN = 1
 
 export const WALL_CATALOG: CatalogEntry[] = [
   {
-    id: 'large-outcropping',
-    name: 'Large Outcropping',
+    id: 'tumbled-ashlar',
+    name: 'Tumbled Ashlar',
     widthIn: 36,
     depthIn: 18,
     heightIn: 8,

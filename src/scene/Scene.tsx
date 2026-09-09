@@ -46,10 +46,7 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
     const halfH = Math.atan(Math.tan(halfV) * aspect)
     const distance = radius / Math.sin(Math.min(halfV, halfH))
 
-    // Placing the camera means mutating it. R3F exposes no declarative way to
-    // fit a frustum, so oxlint's react/immutability rule flags this line; the
-    // rule does not know about the imperative escape hatch and neither an
-    // oxlint- nor an eslint- disable directive suppresses it here.
+    // Known false positive: oxlint's react/immutability flags R3F's imperative camera API, and neither oxlint-disable nor eslint-disable suppresses it.
     camera.position.copy(target).addScaledVector(VIEW_DIRECTION, distance)
     camera.near = Math.max(distance / 200, 0.1)
     camera.far = distance * 8
