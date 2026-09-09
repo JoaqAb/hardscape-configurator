@@ -1,7 +1,15 @@
 // PLACEHOLDER DATA — replace with the real SKU sheet.
 // Nothing in the scene or the takeoff is hardcoded to these values.
+//
+// Naming rule (SPEC §7): style names describe texture and format. No real
+// product line from any manufacturer appears here, because we do not know whose
+// catalog the client actually sells, and descriptive names make it obvious
+// these are placeholders.
+//
+// Colorway ids are deliberately shared across SKUs where the trade colour is
+// the same. That is what lets a customer switch style and keep their colour.
 
-import type { CapSku, CatalogEntry, WallSku } from '../model/types'
+import type { CapSku, CatalogEntry, Colorway, WallSku } from '../model/types'
 
 /** Cap geometry follows the block it sits on (SPEC §7). */
 export const CAP_DEPTH_BONUS_IN = 2
@@ -10,43 +18,64 @@ export const CAP_FRONT_OVERHANG_IN = 1
 
 export const WALL_CATALOG: CatalogEntry[] = [
   {
-    id: 'ashlar-ledge',
-    name: 'Ashlar Ledge',
+    id: 'large-outcropping',
+    name: 'Large Outcropping',
     widthIn: 36,
     depthIn: 18,
     heightIn: 8,
-    colorHex: '#9c948a',
     setbackIn: 1,
     pricePerUnit: 24.5,
+    colorways: [
+      { id: 'gray-granite', name: 'Gray Granite', hex: '#8e908c' },
+      { id: 'charcoal', name: 'Charcoal', hex: '#4c4d50' },
+      { id: 'buff-blend', name: 'Buff Blend', hex: '#b3a081' },
+    ],
     locked: false,
   },
   {
-    id: 'highland-face',
-    name: 'Highland Face',
+    id: 'weathered-fieldstone',
+    name: 'Weathered Fieldstone',
     widthIn: 24,
     depthIn: 16,
     heightIn: 6,
-    colorHex: '#8b8b86',
     setbackIn: 0.75,
     pricePerUnit: 14.75,
+    colorways: [
+      { id: 'buff-blend', name: 'Buff Blend', hex: '#bda98a' },
+      { id: 'autumn-sunset', name: 'Autumn Sunset', hex: '#a3714e' },
+      { id: 'charcoal', name: 'Charcoal', hex: '#4f5153' },
+      { id: 'slate-blend', name: 'Slate Blend', hex: '#727a7d' },
+    ],
     locked: false,
   },
   {
-    id: 'quarry-split',
-    name: 'Quarry Split',
+    id: 'linear-ledge',
+    name: 'Linear Ledge',
     widthIn: 18,
     depthIn: 12,
     heightIn: 4,
-    colorHex: '#a8a096',
     setbackIn: 0.5,
     pricePerUnit: 7.25,
+    colorways: [
+      { id: 'charcoal', name: 'Charcoal', hex: '#4a4b4e' },
+      { id: 'gray-granite', name: 'Gray Granite', hex: '#96979a' },
+      { id: 'sandstone-blend', name: 'Sandstone Blend', hex: '#c0ab86' },
+    ],
     locked: false,
   },
-  { id: 'belvedere', name: 'Belvedere', colorHex: '#b0a898', locked: true },
-  { id: 'outcropping', name: 'Outcropping', colorHex: '#7d7a74', locked: true },
-  { id: 'heartwood', name: 'Heartwood', colorHex: '#9d8b78', locked: true },
-  { id: 'grand-ledge', name: 'Grand Ledge', colorHex: '#8e9490', locked: true },
-  { id: 'claremont', name: 'Claremont', colorHex: '#a49a8e', locked: true },
+  {
+    id: 'chiseled-limestone',
+    name: 'Chiseled Limestone',
+    colorHex: '#c4bda9',
+    locked: true,
+  },
+  { id: 'split-face', name: 'Split Face', colorHex: '#7f8384', locked: true },
+  {
+    id: 'hand-hewn-stack',
+    name: 'Hand-Hewn Stack',
+    colorHex: '#9a8b76',
+    locked: true,
+  },
 ]
 
 export function isBuildable(entry: CatalogEntry): entry is WallSku {
@@ -56,10 +85,21 @@ export function isBuildable(entry: CatalogEntry): entry is WallSku {
 export const ACTIVE_WALL_SKUS: WallSku[] = WALL_CATALOG.filter(isBuildable)
 
 export const DEFAULT_SKU_ID = ACTIVE_WALL_SKUS[0].id
+export const DEFAULT_COLORWAY_ID = ACTIVE_WALL_SKUS[0].colorways[0].id
+
+/**
+ * Style and colorway are independent axes, so a colorway that the newly chosen
+ * style does not offer falls back to that style's first colour instead of
+ * throwing (SPEC §7).
+ */
+export function resolveColorway(sku: WallSku, colorwayId: string): Colorway {
+  return sku.colorways.find((c) => c.id === colorwayId) ?? sku.colorways[0]
+}
 
 /**
  * The cap is a separate SKU but its geometry is a consequence of the block it
- * caps, so it is derived rather than typed out. Its price lives in pricing.ts.
+ * caps, so it is derived rather than typed out. It is sold in the same colour
+ * as the wall, so it carries no colour of its own. Its price lives in pricing.ts.
  */
 export function capForWallSku(sku: WallSku): CapSku {
   return {
@@ -69,6 +109,5 @@ export function capForWallSku(sku: WallSku): CapSku {
     depthIn: sku.depthIn + CAP_DEPTH_BONUS_IN,
     heightIn: CAP_HEIGHT_IN,
     overhangIn: CAP_FRONT_OVERHANG_IN,
-    colorHex: sku.colorHex,
   }
 }

@@ -6,6 +6,13 @@
  * the scene and is therefore already in scene units (feet).
  */
 
+/** A colour the SKU is actually sold in, with the name the trade uses. */
+export type Colorway = {
+  id: string
+  name: string
+  hex: string
+}
+
 /**
  * A wall unit we can actually build with. `locked: false` is not decoration:
  * it is what lets TypeScript guarantee that a locked style can never reach
@@ -13,15 +20,16 @@
  */
 export type WallSku = {
   id: string
-  /** Commercial name. */
+  /** Descriptive of texture and format, never a real product line (SPEC §7). */
   name: string
   widthIn: number
   depthIn: number
   heightIn: number
-  colorHex: string
   /** Per-course retreat into the slope. */
   setbackIn: number
   pricePerUnit: number
+  /** At least three, and never empty: material selection is the point (SPEC §1). */
+  colorways: Colorway[]
   locked: false
 }
 
@@ -47,12 +55,15 @@ export type CapSku = {
   heightIn: number
   /** How far the cap projects past the front face of the top course. */
   overhangIn: number
-  colorHex: string
 }
 
-/** The complete user-facing state of a wall. */
+/**
+ * The complete user-facing state of a wall. Style and colorway are independent
+ * axes (SPEC §7): changing one never resets the other.
+ */
 export type WallConfig = {
   skuId: string
+  colorwayId: string
   runLengthIn: number
   /** The user picks courses, not a height (SPEC §8.1). */
   courses: number
@@ -78,6 +89,8 @@ export type BlockPlacement = {
 
 export type DerivedWall = {
   sku: WallSku
+  /** Already resolved, with the fallback applied. The scene just reads it. */
+  colorway: Colorway
   /** Null when caps are switched off. */
   cap: CapSku | null
   courses: number

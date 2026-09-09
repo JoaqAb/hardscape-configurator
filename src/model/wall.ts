@@ -14,6 +14,7 @@ import {
   WALL_CATALOG,
   capForWallSku,
   isBuildable,
+  resolveColorway,
 } from '../data/catalog'
 import { hashSeed, jitter, mulberry32 } from './rng'
 import type {
@@ -85,6 +86,7 @@ export function deriveWall(
   catalog: CatalogEntry[] = WALL_CATALOG,
 ): DerivedWall {
   const sku = resolveSku(config.skuId, catalog)
+  const colorway = resolveColorway(sku, config.colorwayId)
   const courses = Math.max(1, Math.floor(config.courses))
   const runLengthIn = Math.max(0, config.runLengthIn)
 
@@ -151,6 +153,7 @@ export function deriveWall(
 
   return {
     sku,
+    colorway,
     cap,
     courses,
     runLengthIn,
