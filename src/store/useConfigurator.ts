@@ -10,6 +10,8 @@ export const MIN_RUN_FT = 8
 export const MAX_RUN_FT = 80
 export const MIN_COURSES = 1
 export const MAX_COURSES = 10
+export const MIN_RETURN_FT = 8
+export const MAX_RETURN_FT = 20
 
 export const DEFAULT_CONFIG: WallConfig = {
   skuId: DEFAULT_SKU_ID,
@@ -17,6 +19,8 @@ export const DEFAULT_CONFIG: WallConfig = {
   runLengthIn: ftToIn(24),
   courses: 4,
   caps: true,
+  returnEnabled: false,
+  returnRunFt: 12,
 }
 
 /**
@@ -57,6 +61,8 @@ type ConfiguratorStore = {
   setRunLengthFt: (feet: number) => void
   setCourses: (courses: number) => void
   setCaps: (caps: boolean) => void
+  setReturnEnabled: (returnEnabled: boolean) => void
+  setReturnRunFt: (feet: number) => void
   applyPreset: (presetId: string) => void
 }
 
@@ -69,6 +75,8 @@ const BOUNDS = {
   maxRunFt: MAX_RUN_FT,
   minCourses: MIN_COURSES,
   maxCourses: MAX_COURSES,
+  minReturnFt: MIN_RETURN_FT,
+  maxReturnFt: MAX_RETURN_FT,
 }
 
 export const useConfigurator = create<ConfiguratorStore>((set) => ({
@@ -98,6 +106,16 @@ export const useConfigurator = create<ConfiguratorStore>((set) => ({
       },
     })),
   setCaps: (caps) => set((s) => ({ config: { ...s.config, caps } })),
+
+  setReturnEnabled: (returnEnabled) =>
+    set((s) => ({ config: { ...s.config, returnEnabled } })),
+  setReturnRunFt: (feet) =>
+    set((s) => ({
+      config: {
+        ...s.config,
+        returnRunFt: clamp(feet, MIN_RETURN_FT, MAX_RETURN_FT),
+      },
+    })),
 
   applyPreset: (presetId) =>
     set((s) => {

@@ -45,7 +45,10 @@ export function computeTakeoff(
   pricing: Pricing,
 ): TakeoffLine[] {
   const { sku, cap } = derived
-  const runFt = inToFt(derived.runLengthIn)
+  // Both runs' built length (SPEC §8.7). Nothing here carries a corner
+  // correction: the overlap was never generated, so there is nothing to
+  // subtract.
+  const runFt = derived.totalRunFt
   const lines: TakeoffLine[] = []
 
   // 1. Wall face area.
@@ -69,7 +72,7 @@ export function computeTakeoff(
     total: lineTotal(blockQty, sku.pricePerUnit),
   })
 
-  // 3. Cap count, which layoutRun produces as ceil(runLengthIn / capWidthIn).
+  // 3. Cap count: the number of cap placements the scene draws, both runs.
   if (cap) {
     const capUnitPrice = sku.pricePerUnit * pricing.capPriceFactor
     lines.push({

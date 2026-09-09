@@ -70,6 +70,11 @@ export type WallConfig = {
   /** The user picks courses, not a height (SPEC §8.1). */
   courses: number
   caps: boolean
+  /** The 90 degree return (SPEC §8.7). Off by default: the default wall is one
+   *  straight run. An independent axis, like style and colorway. */
+  returnEnabled: boolean
+  /** The return's own built length, measured from the back face of runA. */
+  returnRunFt: number
 }
 
 /**
@@ -110,6 +115,10 @@ export type DerivedWall = {
   cap: CapSku | null
   courses: number
   runLengthIn: number
+  /** The return's built length, zero when the return is off. */
+  returnRunLengthIn: number
+  /** Both runs' built length. Every length driven takeoff line reads this. */
+  totalRunFt: number
   /** Courses only. */
   wallHeightIn: number
   /** Courses plus cap, i.e. what the customer measures. */
@@ -118,6 +127,12 @@ export type DerivedWall = {
   bondOffsetIn: number
   /** Cumulative retreat at the top course (SPEC §8.4). */
   topSetbackIn: number
+  /**
+   * Where the two retreating face planes meet at the top course, in inches.
+   * The vertex is not fixed: it walks the 45 degree bisector, one cumulative
+   * setback in each axis per course (SPEC §8.7).
+   */
+  cornerVertexIn: { x: number; z: number } | null
   blocks: BlockPlacement[]
   /** The same objects as `blocks`, grouped so the scene never has to sort. */
   courseBlocks: BlockPlacement[][]

@@ -17,6 +17,8 @@ const PARAM = {
   runFt: 'len',
   courses: 'courses',
   caps: 'caps',
+  returnEnabled: 'ret',
+  returnRunFt: 'retlen',
 } as const
 
 /**
@@ -53,7 +55,14 @@ function readSku(raw: string | null, fallback: string): WallSku {
 export function hydrateConfig(
   search: string,
   defaults: WallConfig,
-  bounds: { minRunFt: number; maxRunFt: number; minCourses: number; maxCourses: number },
+  bounds: {
+    minRunFt: number
+    maxRunFt: number
+    minCourses: number
+    maxCourses: number
+    minReturnFt: number
+    maxReturnFt: number
+  },
 ): WallConfig {
   const params = new URLSearchParams(search)
 
@@ -88,6 +97,16 @@ export function hydrateConfig(
       ),
     ),
     caps: readCaps(params.get(PARAM.caps), defaults.caps),
+    returnEnabled: readCaps(
+      params.get(PARAM.returnEnabled),
+      defaults.returnEnabled,
+    ),
+    returnRunFt: readNumber(
+      params.get(PARAM.returnRunFt),
+      defaults.returnRunFt,
+      bounds.minReturnFt,
+      bounds.maxReturnFt,
+    ),
   }
 }
 
@@ -98,6 +117,8 @@ export function configToSearch(config: WallConfig): string {
     [PARAM.runFt]: String(inToFt(config.runLengthIn)),
     [PARAM.courses]: String(config.courses),
     [PARAM.caps]: config.caps ? '1' : '0',
+    [PARAM.returnEnabled]: config.returnEnabled ? '1' : '0',
+    [PARAM.returnRunFt]: String(config.returnRunFt),
   })
   return params.toString()
 }
