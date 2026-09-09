@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { DEFAULT_COLORWAY_ID, DEFAULT_SKU_ID } from '../data/catalog'
 import type { WallConfig } from '../model/types'
 import { ftToIn } from '../model/units'
+import { hydrateConfig } from './urlState'
 
 /** Bounds for the dimension controls, in the units the controls speak. */
 export const MIN_RUN_FT = 8
@@ -18,6 +19,37 @@ export const DEFAULT_CONFIG: WallConfig = {
   caps: true,
 }
 
+/**
+ * Presets (SPEC §14), named the way the trade names them.
+ *
+ * A preset is a config, not a handler, so it lives here as data. It carries
+ * dimensions only: material selection is the primary interaction (SPEC §1), and
+ * a size shortcut has no business throwing away the colour the customer picked.
+ */
+export type Preset = {
+  id: string
+  label: string
+  config: Pick<WallConfig, 'runLengthIn' | 'courses' | 'caps'>
+}
+
+export const PRESETS: Preset[] = [
+  {
+    id: 'garden-wall',
+    label: "Garden wall — 20' × 3 courses",
+    config: { runLengthIn: ftToIn(20), courses: 3, caps: true },
+  },
+  {
+    id: 'backyard-terrace',
+    label: "Backyard terrace — 40' × 6 courses",
+    config: { runLengthIn: ftToIn(40), courses: 6, caps: true },
+  },
+  {
+    id: 'driveway-edge',
+    label: "Driveway edge — 60' × 2 courses",
+    config: { runLengthIn: ftToIn(60), courses: 2, caps: true },
+  },
+]
+
 type ConfiguratorStore = {
   config: WallConfig
   setSkuId: (skuId: string) => void
@@ -25,14 +57,24 @@ type ConfiguratorStore = {
   setRunLengthFt: (feet: number) => void
   setCourses: (courses: number) => void
   setCaps: (caps: boolean) => void
+  applyPreset: (presetId: string) => void
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+const BOUNDS = {
+  minRunFt: MIN_RUN_FT,
+  maxRunFt: MAX_RUN_FT,
+  minCourses: MIN_COURSES,
+  maxCourses: MAX_COURSES,
+}
+
 export const useConfigurator = create<ConfiguratorStore>((set) => ({
-  config: DEFAULT_CONFIG,
+  // Hydrated at construction rather than in an effect, so the first render is
+  // already the wall the link describes and nothing flashes the default first.
+  config: hydrateConfig(window.location.search, DEFAULT_CONFIG, BOUNDS),
 
   // Style and colorway are independent axes (SPEC §7), so neither setter
   // touches the other. A pairing the new style does not offer is resolved by
@@ -56,4 +98,10 @@ export const useConfigurator = create<ConfiguratorStore>((set) => ({
       },
     })),
   setCaps: (caps) => set((s) => ({ config: { ...s.config, caps } })),
+
+  applyPreset: (presetId) =>
+    set((s) => {
+      const preset = PRESETS.find((p) => p.id === presetId)
+      return preset ? { config: { ...s.config, ...preset.config } } : s
+    }),
 }))

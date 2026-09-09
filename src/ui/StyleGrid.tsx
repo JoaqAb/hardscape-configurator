@@ -1,6 +1,12 @@
-import { ACTIVE_WALL_SKUS, resolveColorway } from '../data/catalog'
+import {
+  ACTIVE_WALL_SKUS,
+  WALL_CATALOG,
+  isLockedStyle,
+  resolveColorway,
+} from '../data/catalog'
 import type { DerivedWall } from '../model/types'
 import { useConfigurator } from '../store/useConfigurator'
+import { LockedControl } from './LockedControl'
 
 /**
  * Material selection: the primary interaction of the whole tool (SPEC §1).
@@ -56,6 +62,27 @@ export function StyleGrid({ derived }: { derived: DerivedWall }) {
               </button>
             )
           })}
+
+          {WALL_CATALOG.filter(isLockedStyle).map((entry) => (
+            <LockedControl
+              key={entry.id}
+              estimateHours={entry.estimateHours}
+              className="rounded-md border border-stone-200 p-2"
+            >
+              <span
+                className="h-10 w-14 shrink-0 rounded border border-black/10"
+                style={{ backgroundColor: entry.colorHex }}
+              />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-stone-700">
+                  {entry.name}
+                </span>
+                <span className="block text-xs text-stone-500">
+                  Awaiting SKU sheet
+                </span>
+              </span>
+            </LockedControl>
+          ))}
         </div>
       </section>
 

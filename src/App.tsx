@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { deriveWall } from './model/wall'
 import { Scene } from './scene/Scene'
 import { useConfigurator } from './store/useConfigurator'
+import { syncUrl } from './store/urlState'
 import { ControlPanel } from './ui/ControlPanel'
 import { TakeoffPanel } from './ui/TakeoffPanel'
 import { VersionBadge } from './ui/VersionBadge'
@@ -14,6 +15,12 @@ export default function App() {
   // object, which is what keeps what is drawn and what is quoted from ever
   // disagreeing.
   const derived = useMemo(() => deriveWall(config), [config])
+
+  // The address bar always describes the wall on screen, via replaceState so
+  // that dragging a slider does not bury the back button.
+  useEffect(() => {
+    syncUrl(config)
+  }, [config])
 
   return (
     <div className="flex h-full flex-col bg-stone-100 lg:flex-row">

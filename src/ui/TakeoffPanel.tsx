@@ -1,3 +1,8 @@
+import {
+  FEATURE_GROUP_LABELS,
+  ROADMAP_GROUPS,
+  featuresIn,
+} from '../data/features'
 import { PRICING } from '../data/pricing'
 import {
   ENGINEERED_WALL_NOTICE,
@@ -6,6 +11,7 @@ import {
 } from '../model/takeoff'
 import type { DerivedWall, TakeoffLine } from '../model/types'
 import { formatQuantity, formatUsd } from '../model/units'
+import { LockedControl } from './LockedControl'
 import { useMemo } from 'react'
 
 /**
@@ -83,6 +89,36 @@ export function TakeoffPanel({ derived }: { derived: DerivedWall }) {
         Placeholder pricing. Quantities are an estimate for planning, not a
         quote.
       </p>
+
+      {/* The roadmap lives here rather than in the control panel: it is worth
+          showing, but not at the cost of crowding the actual product. */}
+      <div className="mt-2 border-t border-stone-200 pt-3">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
+          Roadmap
+        </h2>
+        <div className="flex flex-col gap-3">
+          {ROADMAP_GROUPS.map((group) => (
+            <section key={group}>
+              <h3 className="mb-1 text-[10px] font-medium uppercase tracking-wide text-stone-400">
+                {FEATURE_GROUP_LABELS[group]}
+              </h3>
+              <div className="flex flex-col gap-0.5">
+                {featuresIn(group).map((feature) => (
+                  <LockedControl
+                    key={feature.id}
+                    estimateHours={feature.estimateHours}
+                    className="py-0.5"
+                  >
+                    <span className="truncate text-[11px] text-stone-600">
+                      {feature.label}
+                    </span>
+                  </LockedControl>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

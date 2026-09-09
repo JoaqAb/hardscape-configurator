@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import type { DerivedWall } from '../model/types'
 import { formatFeetInches, inToFt } from '../model/units'
 import {
@@ -5,9 +7,44 @@ import {
   MAX_RUN_FT,
   MIN_COURSES,
   MIN_RUN_FT,
+  PRESETS,
   useConfigurator,
 } from '../store/useConfigurator'
+import { ProductFamilyTabs } from './ProductFamilyTabs'
 import { StyleGrid } from './StyleGrid'
+
+/**
+ * The link is the lead (SPEC §12), so copying it is a first-class action and
+ * has to tell the truth when the clipboard is unavailable rather than claim a
+ * success that did not happen.
+ */
+function CopyLinkButton() {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle')
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setState('copied')
+    } catch {
+      setState('failed')
+    }
+    setTimeout(() => setState('idle'), 2000)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="w-full rounded-md border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:border-stone-400 hover:bg-stone-50"
+    >
+      {state === 'copied'
+        ? 'Link copied'
+        : state === 'failed'
+          ? 'Copy failed — select the address bar'
+          : 'Copy link'}
+    </button>
+  )
+}
 
 function Field({
   label,
@@ -42,6 +79,7 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
   const setRunLengthFt = useConfigurator((s) => s.setRunLengthFt)
   const setCourses = useConfigurator((s) => s.setCourses)
   const setCaps = useConfigurator((s) => s.setCaps)
+  const applyPreset = useConfigurator((s) => s.applyPreset)
 
   const runFt = inToFt(config.runLengthIn)
 
@@ -56,7 +94,27 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
         </p>
       </header>
 
+      <ProductFamilyTabs />
+
       <StyleGrid derived={derived} />
+
+      <section>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
+          Presets
+        </h2>
+        <div className="flex flex-col gap-1">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => applyPreset(preset.id)}
+              className="rounded-md border border-stone-200 px-2.5 py-1.5 text-left text-xs text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <div className="space-y-4 border-t border-stone-200 pt-5">
         <Field label="Wall length" value={formatFeetInches(config.runLengthIn)}>
@@ -107,6 +165,8 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
           {formatFeetInches(derived.totalHeightIn)}
         </dd>
       </dl>
+
+      <CopyLinkButton />
     </div>
   )
 }

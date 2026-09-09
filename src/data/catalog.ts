@@ -9,7 +9,13 @@
 // Colorway ids are deliberately shared across SKUs where the trade colour is
 // the same. That is what lets a customer switch style and keep their colour.
 
-import type { CapSku, CatalogEntry, Colorway, WallSku } from '../model/types'
+import type {
+  CapSku,
+  CatalogEntry,
+  Colorway,
+  LockedWallSku,
+  WallSku,
+} from '../model/types'
 
 /** Cap geometry follows the block it sits on (SPEC §7). */
 export const CAP_DEPTH_BONUS_IN = 2
@@ -68,18 +74,30 @@ export const WALL_CATALOG: CatalogEntry[] = [
     name: 'Chiseled Limestone',
     colorHex: '#c4bda9',
     locked: true,
+    estimateHours: 2,
   },
-  { id: 'split-face', name: 'Split Face', colorHex: '#7f8384', locked: true },
+  {
+    id: 'split-face',
+    name: 'Split Face',
+    colorHex: '#7f8384',
+    locked: true,
+    estimateHours: 2,
+  },
   {
     id: 'hand-hewn-stack',
     name: 'Hand-Hewn Stack',
     colorHex: '#9a8b76',
     locked: true,
+    estimateHours: 3,
   },
 ]
 
 export function isBuildable(entry: CatalogEntry): entry is WallSku {
   return !entry.locked
+}
+
+export function isLockedStyle(entry: CatalogEntry): entry is LockedWallSku {
+  return entry.locked
 }
 
 export const ACTIVE_WALL_SKUS: WallSku[] = WALL_CATALOG.filter(isBuildable)

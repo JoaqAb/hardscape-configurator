@@ -42,6 +42,8 @@ export type LockedWallSku = {
   name: string
   colorHex: string
   locked: true
+  /** What it would take to add this style once the SKU sheet arrives. */
+  estimateHours: number
 }
 
 export type CatalogEntry = WallSku | LockedWallSku
