@@ -1,7 +1,19 @@
 @import 'tailwindcss';
 
+@theme {
+  /* Cool neutral palette with a single accent, per SPEC §13. The accent is a
+     clay tone: it reads as a materials brand and stays legible against the
+     desaturated greys and buffs of the product colorways. */
+  --color-accent: #b45309;
+  --color-accent-soft: #fdf3e7;
+}
+
 html,
 body,
 #root {
   height: 100%;
+}
+
+body {
+  overscroll-behavior: none;
 }

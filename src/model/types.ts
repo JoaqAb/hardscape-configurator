@@ -104,6 +104,8 @@ export type DerivedWall = {
   /** Cumulative retreat at the top course (SPEC §8.4). */
   topSetbackIn: number
   blocks: BlockPlacement[]
+  /** The same objects as `blocks`, grouped so the scene never has to sort. */
+  courseBlocks: BlockPlacement[][]
   capPieces: BlockPlacement[]
   /** Instances drawn, which is also what the takeoff bills (SPEC §9). */
   blockCount: number

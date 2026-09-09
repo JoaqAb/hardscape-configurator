@@ -30,6 +30,14 @@ import { degToRad, inToFt } from './units'
 const POSITION_JITTER_IN = 0.15
 const ROTATION_JITTER_DEG = 0.6
 
+/**
+ * Real units are chamfered, so a wall shows a shadow line at every joint. We
+ * draw each piece fractionally undersized to get the same reading. This is
+ * geometry, not decoration, but it deliberately does not touch the layout: the
+ * spans, the counts and therefore the takeoff are all unaffected.
+ */
+const JOINT_REVEAL_IN = 0.25
+
 /** Keeps cap jitter from mirroring the block jitter underneath it. */
 const CAP_SEED_SALT = 0xca9
 const EPSILON = 1e-6
@@ -95,8 +103,9 @@ export function deriveWall(
   const topSetbackIn = (courses - 1) * sku.setbackIn
   const cap = config.caps ? capForWallSku(sku) : null
 
-  const blocks: BlockPlacement[] = []
+  const courseBlocks: BlockPlacement[][] = []
   for (let course = 0; course < courses; course++) {
+    const rowBlocks: BlockPlacement[] = []
     // Odd courses start half a unit back, so the head joint of one course
     // lands on the middle of the block below it.
     const courseOffsetIn = course % 2 === 1 ? -bondOffsetIn : 0
@@ -109,20 +118,28 @@ export function deriveWall(
       const offsetZIn = jitter(rand, POSITION_JITTER_IN)
       const rotationDeg = jitter(rand, ROTATION_JITTER_DEG)
 
-      blocks.push({
+      rowBlocks.push({
         position: [
           inToFt(span.startIn + span.widthIn / 2 + offsetXIn),
           inToFt(centreYIn),
           inToFt(-(sku.depthIn / 2 + setbackIn) + offsetZIn),
         ],
         rotationY: degToRad(rotationDeg),
-        scale: [inToFt(span.widthIn), inToFt(sku.heightIn), inToFt(sku.depthIn)],
+        scale: [
+          inToFt(span.widthIn - JOINT_REVEAL_IN),
+          inToFt(sku.heightIn - JOINT_REVEAL_IN),
+          inToFt(sku.depthIn),
+        ],
         widthFraction: span.fraction,
         courseIndex: course,
         indexInCourse: i,
       })
     })
+
+    courseBlocks.push(rowBlocks)
   }
+
+  const blocks = courseBlocks.flat()
 
   const capPieces: BlockPlacement[] = []
   if (cap) {
@@ -143,7 +160,11 @@ export function deriveWall(
           inToFt(centreZIn),
         ],
         rotationY: degToRad(rotationDeg),
-        scale: [inToFt(span.widthIn), inToFt(cap.heightIn), inToFt(cap.depthIn)],
+        scale: [
+          inToFt(span.widthIn - JOINT_REVEAL_IN),
+          inToFt(cap.heightIn),
+          inToFt(cap.depthIn),
+        ],
         widthFraction: span.fraction,
         courseIndex: courses,
         indexInCourse: i,
@@ -162,6 +183,7 @@ export function deriveWall(
     bondOffsetIn,
     topSetbackIn,
     blocks,
+    courseBlocks,
     capPieces,
     blockCount: blocks.length,
     capCount: capPieces.length,
