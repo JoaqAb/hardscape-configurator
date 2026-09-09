@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "npm run build && wrangler dev",
+    "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
@@ -20,7 +20,6 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.54.6",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",

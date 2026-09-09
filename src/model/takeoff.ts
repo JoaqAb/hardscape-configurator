@@ -18,6 +18,15 @@ const GRAVEL_TONS_PER_YD3 = 1.4
 const ADHESIVE_COVERAGE_FT = 20
 const CONCRETE_DENSITY_LB_PER_FT3 = 145
 
+/**
+ * Money is rounded exactly once, here, when a line total is formed. The
+ * estimate is then the sum of those rounded lines, so the column a customer
+ * adds up by hand agrees with the total printed underneath it.
+ */
+function lineTotal(qty: number, unitPrice: number): number {
+  return Math.round(qty * unitPrice)
+}
+
 export const ENGINEERED_WALL_HEIGHT_IN = 48
 export const ENGINEERED_WALL_NOTICE =
   "Walls over 4' typically require an engineered design. We'll flag this for review."
@@ -57,7 +66,7 @@ export function computeTakeoff(
     qty: blockQty,
     unit: 'ea',
     unitPrice: sku.pricePerUnit,
-    total: blockQty * sku.pricePerUnit,
+    total: lineTotal(blockQty, sku.pricePerUnit),
   })
 
   // 3. Cap count, which layoutRun produces as ceil(runLengthIn / capWidthIn).
@@ -68,7 +77,7 @@ export function computeTakeoff(
       qty: derived.capCount,
       unit: 'ea',
       unitPrice: capUnitPrice,
-      total: derived.capCount * capUnitPrice,
+      total: lineTotal(derived.capCount, capUnitPrice),
     })
   }
 
@@ -81,7 +90,7 @@ export function computeTakeoff(
     qty: gravelTons,
     unit: 'tons',
     unitPrice: pricing.gravelPricePerTon,
-    total: gravelTons * pricing.gravelPricePerTon,
+    total: lineTotal(gravelTons, pricing.gravelPricePerTon),
   })
 
   // 5. Adhesive: one bead along the top course, and a second under the caps
@@ -93,10 +102,12 @@ export function computeTakeoff(
     qty: tubes,
     unit: 'tubes',
     unitPrice: pricing.adhesivePricePerTube,
-    total: tubes * pricing.adhesivePricePerTube,
+    total: lineTotal(tubes, pricing.adhesivePricePerTube),
   })
 
-  // 6. Estimated total: the sum of everything above that carries a price.
+  // 6. Estimated total: the sum of the rounded lines above, not the rounding of
+  //    an unrounded sum. This is a customer-facing document; the arithmetic has
+  //    to survive being checked with a pencil.
   const estimate = lines.reduce((sum, line) => sum + (line.total ?? 0), 0)
   lines.push({
     label: 'Estimated total',

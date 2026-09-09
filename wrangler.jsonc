@@ -6,6 +6,8 @@
     "enabled": true
   },
   "assets": {
+    // Vite writes the static build here; wrangler uploads it as-is.
+    "directory": "./dist",
     "not_found_handling": "single-page-application"
   }
 }
