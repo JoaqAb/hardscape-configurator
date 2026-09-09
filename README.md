@@ -25,11 +25,12 @@ disagree.
 
 ## Why instanced rendering
 
-A 40 foot wall with 6 courses is 84 blocks. A 80 foot wall with 10 courses is
+A 40 foot wall with 6 courses is 84 blocks. An 80 foot wall with 10 courses is
 275. Every block is the same box with a different position and size. Drawing
 them one by one would mean hundreds of separate draw calls. Instead they are
 drawn as instances: one geometry, one material, one draw call for the whole
-wall. The browser does the repetition, not the CPU.
+wall. The GPU repeats the same geometry, instead of the CPU sending one draw
+call per block.
 
 ## What is real and what is placeholder
 

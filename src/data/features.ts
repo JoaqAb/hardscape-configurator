@@ -55,11 +55,11 @@ export const FEATURES: Feature[] = [
   { id: 'metric-units', label: 'Metric units toggle', group: 'business', locked: true, estimateHours: 1 },
   { id: 'save-share', label: 'Save & share project', group: 'business', locked: true, estimateHours: 2 },
 
-  { id: 'white-label', label: 'White-label multi-tenant catalog', group: 'platform', locked: true, estimateHours: 12 },
-  { id: 'admin-catalog', label: 'Admin catalog editor', group: 'platform', locked: true, estimateHours: 10 },
+  { id: 'tenant-scoped-catalog', label: 'Tenant-scoped catalog', group: 'platform', locked: true, estimateHours: 12 },
+  { id: 'admin-catalog', label: 'Admin catalog editor (no auth)', group: 'platform', locked: true, estimateHours: 10 },
 
   { id: 'layout-sheet', label: 'Printable top-down layout sheet', group: 'technical', locked: true, estimateHours: 3 },
-  { id: 'export-dwg', label: 'Export to DWG', group: 'technical', locked: true, estimateHours: 4 },
+  { id: 'export-dxf', label: 'Export to DXF', group: 'technical', locked: true, estimateHours: 4 },
 ]
 
 /**
@@ -77,6 +77,32 @@ export function roadmapTotals(): { count: number; hours: number } {
     hours:
       lockedFeatures.reduce((sum, f) => sum + f.estimateHours, 0) +
       lockedStyles.reduce((sum, s) => sum + s.estimateHours, 0),
+  }
+}
+
+export type RoadmapSubtotal = { count: number; hours: number }
+
+/**
+ * The locked items that render somewhere other than the roadmap card: the
+ * product families are the tabs, and the wall styles are in the style grid
+ * because §10 keeps styles out of the registry on purpose.
+ *
+ * The card shows these as two subtotal rows so its column sums to the header.
+ * They are subtotals, not second homes: no per-item estimate is repeated.
+ */
+export function lockedFamilySubtotal(): RoadmapSubtotal {
+  const locked = FEATURES.filter((f) => f.group === 'family' && f.locked)
+  return {
+    count: locked.length,
+    hours: locked.reduce((sum, f) => sum + f.estimateHours, 0),
+  }
+}
+
+export function lockedStyleSubtotal(): RoadmapSubtotal {
+  const locked = WALL_CATALOG.filter(isLockedStyle)
+  return {
+    count: locked.length,
+    hours: locked.reduce((sum, s) => sum + s.estimateHours, 0),
   }
 }
 

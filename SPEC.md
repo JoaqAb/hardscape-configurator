@@ -315,7 +315,7 @@ that the architecture generalizes beyond the one family that is built.
 **Business output** — Export PDF quote 2h · Export takeoff to CSV 1h · Delivery
 freight by ZIP 3h · Metric units toggle 1h · Save & share project 2h
 
-**Platform** — White-label multi-tenant catalog 12h · Admin catalog editor 10h
+**Platform** — Tenant-scoped catalog 12h · Admin catalog editor (no auth) 10h
 
 The Platform group matters more than its size suggests. The job posting calls
 this a "working SaaS product", which leaves open whether it is for the client
@@ -323,7 +323,7 @@ alone or for other suppliers in their industry. These two entries are the
 honest, visible answer to that question, and they are only credible because the
 catalog is already data rather than code.
 
-**Technical output** — Printable top-down layout sheet 3h · Export to DWG 4h
+**Technical output** — Printable top-down layout sheet 3h · Export to DXF 4h
 
 Design the registry so that enabling a feature means flipping `locked: false`
 and writing its logic, with no UI changes. One may need to be unlocked live.
