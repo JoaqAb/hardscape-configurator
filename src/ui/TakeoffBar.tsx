@@ -8,6 +8,7 @@ import {
 } from '../model/takeoff'
 import type { DerivedWall, TakeoffLine } from '../model/types'
 import { formatQuantity, formatUsd } from '../model/units'
+import { useViewport } from '../store/useViewport'
 
 /**
  * The desktop takeoff (SPEC §9, §13): the same lines as the mobile panel, laid
@@ -24,6 +25,7 @@ function isMoneyLine(line: TakeoffLine): boolean {
 export function TakeoffBar({ derived }: { derived: DerivedWall }) {
   const lines = useMemo(() => computeTakeoff(derived, PRICING), [derived])
   const engineered = needsEngineeredDesign(derived)
+  const openLeadForm = useViewport((s) => s.setLeadFormOpen)
 
   const figures = lines.filter((line) => !isMoneyLine(line))
   const total = lines.find(isMoneyLine)
@@ -53,13 +55,25 @@ export function TakeoffBar({ derived }: { derived: DerivedWall }) {
         </dl>
 
         {total && (
-          <div className="shrink-0 border-l border-stone-200 pl-4 text-right">
-            <div className="text-[10px] uppercase tracking-wide text-stone-400">
-              {total.label}
+          <div className="flex shrink-0 items-center gap-4 border-l border-stone-200 pl-4">
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wide text-stone-400">
+                {total.label}
+              </div>
+              <div className="text-xl font-semibold tabular-nums text-stone-900">
+                {formatUsd(total.qty)}
+              </div>
             </div>
-            <div className="text-xl font-semibold tabular-nums text-stone-900">
-              {formatUsd(total.qty)}
-            </div>
+            {/* The estimate is the moment the visitor is qualified, so the
+                action sits against the number. Not "Request a quote": §9 is
+                explicit that this is not one. */}
+            <button
+              type="button"
+              onClick={() => openLeadForm(true)}
+              className="rounded bg-accent px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+            >
+              Send me this estimate
+            </button>
           </div>
         )}
       </div>

@@ -28,6 +28,9 @@ type ViewportStore = {
   /** Transient overlay, so it deliberately does not touch the safe rect. */
   roadmapOpen: boolean
   setRoadmapOpen: (open: boolean) => void
+  /** Also a transient overlay: it must not move the camera either. */
+  leadFormOpen: boolean
+  setLeadFormOpen: (open: boolean) => void
 }
 
 export const useViewport = create<ViewportStore>((set) => ({
@@ -52,4 +55,7 @@ export const useViewport = create<ViewportStore>((set) => ({
 
   roadmapOpen: false,
   setRoadmapOpen: (roadmapOpen) => set({ roadmapOpen }),
+
+  leadFormOpen: false,
+  setLeadFormOpen: (leadFormOpen) => set({ leadFormOpen }),
 }))

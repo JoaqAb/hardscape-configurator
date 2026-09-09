@@ -6,6 +6,7 @@ import {
 } from '../model/takeoff'
 import type { DerivedWall, TakeoffLine } from '../model/types'
 import { formatQuantity, formatUsd } from '../model/units'
+import { useViewport } from '../store/useViewport'
 import { RoadmapList } from './RoadmapList'
 import { useMemo } from 'react'
 
@@ -25,6 +26,7 @@ function isMoneyLine(line: TakeoffLine): boolean {
 export function TakeoffPanel({ derived }: { derived: DerivedWall }) {
   const lines = useMemo(() => computeTakeoff(derived, PRICING), [derived])
   const engineered = needsEngineeredDesign(derived)
+  const openLeadForm = useViewport((s) => s.setLeadFormOpen)
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -79,6 +81,14 @@ export function TakeoffPanel({ derived }: { derived: DerivedWall }) {
           {ENGINEERED_WALL_NOTICE}
         </p>
       )}
+
+      <button
+        type="button"
+        onClick={() => openLeadForm(true)}
+        className="w-full rounded bg-accent px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+      >
+        Send me this estimate
+      </button>
 
       <p className="text-[10px] leading-snug text-stone-400">
         Placeholder pricing. Quantities are an estimate for planning, not a

@@ -114,7 +114,7 @@ src/
     urlState.ts          config <-> query params
     useViewport.ts       measured safe area, kept out of the config
   scene/
-    Scene.tsx            Canvas, lights, Environment, ContactShadows, Bounds
+    Scene.tsx            Canvas, local light rig, direct camera fit
     Wall.tsx             composes courses from DerivedWall
     BlockCourse.tsx      Instances/Instance, one per course
     CapCourse.tsx
@@ -512,6 +512,12 @@ more pixels than the product does.
 that fights user input. If that happens, do not spend time tuning it: drop
 `Bounds` and compute the camera distance directly from the wall's bounding box,
 applied only when dimensions change and not on every render.
+
+That is what happened. `Bounds` is not in the build. The fit is a direct frustum
+computation in a `useLayoutEffect` keyed on the config and the measured safe
+rect, and it runs two placements per change: one fit, then one measured
+correction pass, because the safe area is not concentric with the canvas and
+off-axis perspective stretches the projection.
 
 `VersionBadge`, discreet, in a corner: `v0.1`. The hours actually invested
 belong in the README (§15), stated with their context. On the product a time

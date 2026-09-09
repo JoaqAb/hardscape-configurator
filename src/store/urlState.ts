@@ -102,6 +102,14 @@ export function configToSearch(config: WallConfig): string {
   return params.toString()
 }
 
+/**
+ * The shareable link for a config. Built from the config rather than read off
+ * the address bar, so `Copy link` and the captured lead cannot drift apart.
+ */
+export function shareUrlFor(config: WallConfig): string {
+  return `${window.location.origin}${window.location.pathname}?${configToSearch(config)}`
+}
+
 /** replaceState, never pushState: sizing a wall must not fill the back button. */
 export function syncUrl(config: WallConfig): void {
   const url = `${window.location.pathname}?${configToSearch(config)}`

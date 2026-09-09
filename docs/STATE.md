@@ -9,7 +9,7 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 2D closed.** Commits `f385a3a`, `cb68179`. Full bleed is live.
+**Block 2F closed.** Commits `4875fbb`, `98b0141`. Live. The scene is done.
 
 Live and current: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
@@ -23,47 +23,28 @@ Live and current: `https://hardscape-configurator.hardscape-configurator.workers
 - Block 2B (feature registry, LockedControl, tabs, presets, URL state,
   VersionBadge), `6cf33f7`, `a90259f`, `dbe4b89`.
 - Block 2C (presentation pass) complete.
-- Block 2D (full-bleed layout) complete. Canvas at viewport size, two floating
-  cards, measured safe area in `store/useViewport.ts`, camera fitted to the
-  safe rect rather than to the canvas.
+- Block 2D (full-bleed layout), `f385a3a`, `cb68179`. Canvas at viewport size,
+  measured safe area in `store/useViewport.ts`, camera fitted to the safe rect.
+- Block 2E (legibility pass), `7f4641b`, `67e6885`. Takeoff moved to a bottom
+  bar, roadmap to a derived collapsed pill, control card collapsible, badge
+  reduced to `v0.1`, both-axes fit, camera lowered, value separation measured.
+- Block 2F (the site), `4875fbb`, `98b0141`. Finite retained landform derived in
+  `model/site.ts`, `<ContactShadows />` removed with cause, §13's vertical
+  framing target corrected.
 - The 90 degree return is a locked registry row and lives in `If time remains`.
-- **Next**: block 2E, the legibility pass. It absorbs the four scene fixes that
-  used to open block 3, so block 3 is lead capture and README only.
+- **Next**: block 3, lead capture and README. It carries the last two acceptance
+  criteria in `docs/EXECUTION.md`. Everything after it is `If time remains`.
 
-## Why block 2E exists
+## Where the scene landed
 
-2D delivered what it promised and the picture still does not work. Measured at
-1440x900: safe rect 704x852, wall projected to 486x141 px. That is 34 percent
-of the window's width and 16 percent of its height. Two thirds of the window is
-panel, and the subject of the demo is a small band in a large empty field.
+2E extended the retained bank until its edges left the frustum and produced
+earth with no end. 2F reversed that for the retained mass only. The rule was
+never "no visible edge", it is **no visible cut face**, and real soil satisfies
+it by sloping back to grade. The ground plane still runs to the horizon; the
+mass the wall holds is finite, fully in frame, and reads as a terrace the wall
+created.
 
-The panels' footprint, not the camera, is what costs the wall its size. Fitting
-the wall to a 704 px safe area inside a 1440 px window is working correctly and
-producing a bad photograph. 2E buys the width back and separates the values in
-the scene, which are currently close enough that the retained bank and the
-ground read as one surface.
-
-Decisions taken for 2E:
-
-- The takeoff moves out of the right column and into a full-width bar along the
-  bottom. It returns 320 px on the axis the wall is measured on, and a
-  horizontal row of figures suits a sales summary at least as well as a
-  vertical list (SPEC §9).
-- The roadmap leaves the takeoff panel and becomes a collapsed pill at the top
-  right: `Roadmap · N planned · Nh`, both numbers derived from `features.ts`
-  plus the locked SKUs, never typed. Expanding is one click, so SPEC §10 still
-  holds and the header is a stronger statement than the open list was: it is
-  the budget of the next phase, in two numbers.
-- The left control card stays open by default and gains a collapse control.
-  Collapsing writes a smaller safe rect and 2D's existing refit path reframes
-  the camera. No new machinery.
-- With the takeoff on the bottom the safe area is roughly 1050x700, which is
-  landscape for the first time. The both-axes fit SPEC §13 requires becomes
-  meaningful, and 2E implements it.
-- `built in one evening` comes off the badge. It will not be one evening, §15
-  asks for the real number, and the README is where a time figure belongs with
-  its context. On the product it reads as an apology offered before anyone has
-  formed an opinion.
+The scene is closed. Do not reopen it in block 3.
 
 ## Environment
 
@@ -81,6 +62,10 @@ breaks wrangler. Disclosed in the README per §15.
 `@types/three` is an explicit devDependency because three 0.186 ships no
 declarations of its own. No peer dependency conflicts.
 
+`oxlint` exits 0 with zero warnings. The old `react/immutability` false positive
+in `Scene.tsx` disappeared in 2E when camera placement moved to a module-level
+function.
+
 Supabase project `kxnkrlpvhibkzoktzcgd`. Table `public.leads` provisioned, RLS
 on, `anon` holds INSERT only. `.env` is present and gitignored. **Do not create
 or migrate tables.**
@@ -89,10 +74,10 @@ Hosting is Cloudflare Workers static assets, not a legacy Pages project: Pages
 was folded into Workers. Redeploy with `npx wrangler deploy`. Failure modes are
 in `docs/EXECUTION.md`.
 
-Wall config lives in `store/useConfigurator.ts` (zustand) and `App.tsx` reads it
-through a selector. The measured safe area lives in a separate store,
-`store/useViewport.ts`, so it never reaches `urlState`. There is no `useState`
-in the app.
+Wall config lives in `store/useConfigurator.ts` (zustand) and is read through
+selectors. Measured safe area and panel collapse state live in
+`store/useViewport.ts`, so neither reaches `urlState`. There is no `useState` in
+the app.
 
 ## Decisions taken beyond the spec
 
@@ -104,9 +89,9 @@ in the app.
   carry no dimensions, so a discriminated union lets the compiler reject passing
   a locked style to `deriveWall`. They carry `estimateHours` in `catalog.ts`;
   the registry holds no wall styles (SPEC §10). One number, one home.
-- Style names are descriptive per SPEC §7. The five original locked names were
-  real manufacturer product lines and were replaced. `Outcropping` is also a
-  real line; the active SKU that used it is `Tumbled Ashlar`.
+- Style names are descriptive per SPEC §7. The original locked names were real
+  manufacturer product lines and were replaced. `Outcropping` is also a real
+  line; the active SKU that used it is `Tumbled Ashlar`.
 - `capForWallSku` derives cap geometry from the block rather than storing it.
   Cap price is `sku.pricePerUnit * pricing.capPriceFactor`, so it scales with
   the SKU instead of being one flat number.
@@ -122,8 +107,7 @@ in the app.
   the rounded lines and the column adds up by hand.
 - The engineered wall notice keys on wall height **excluding caps** (SPEC §9).
   6 courses is exactly 48" and does not trigger it; the 7th course does.
-- `TakeoffLine.unitPrice` is computed but not rendered. The field is there when
-  a wider layout wants it.
+- `TakeoffLine.unitPrice` is computed but not rendered.
 - The cap line is omitted when caps are off rather than shown as a zero row.
 
 **Config and UI**
@@ -131,74 +115,85 @@ in the app.
 - Presets set dimensions only, never style or colorway (SPEC §14).
 - Out of range URL params fall back to defaults instead of clamping (SPEC §12).
   One rule for every number.
-- Block and cap counts were removed from the control panel: they live in the
-  takeoff. One number, one home.
-- `Finished height` and `Copy link` are pinned to the foot of the left card,
+- Block and cap counts live in the takeoff only. One number, one home.
+- `Finished height` and `Copy link` are pinned to the foot of the control card,
   outside its scroll. Anything added to that card must not change that.
 - Colorway chips are two per row. Three at 320px truncated `Gray Granite`.
-- Panels are opaque, with no `backdrop-filter`. Readability over a rendered
-  image comes first, and the filter costs a repaint for a decorative gain.
-- `VersionBadge` is mounted twice with responsive visibility rather than
-  portaled.
+- Panels are opaque, with no `backdrop-filter`.
+- Panel collapse is UI state in `useViewport`, never in the URL: §12 serialises
+  the wall, and a panel being open is not part of the wall.
+- A persistent layout change refits the camera; a transient overlay does not.
+  Collapsing the control card reframes; expanding the roadmap does not.
+- The takeoff bar is content-sized at 88px rather than the ~120px §13 estimates.
+- `ControlPanel` and `VersionBadge` mount once per breakpoint tree rather than
+  being portaled, because mobile must keep rendering exactly what 2D shipped
+  while desktop was restructured. `RoadmapList` is extracted so the registry has
+  one rendering shared by both.
 
 **Scene**
 
 - No fog (SPEC §13). It washed the image, the same failure mode as ACES. The
-  horizon is pushed out with a 4000 ft ground plane instead.
-- Tone mapping off (`<Canvas flat>`), and one turfed bank instead of a separate
-  slope plane. Both are now in SPEC §13 and §8.8. Do not re-litigate.
+  ground plane is 4000 ft and puts its edge on the horizon.
+- Tone mapping off (`<Canvas flat>`), and one turfed mass instead of a separate
+  slope plane. Both are in SPEC §13 and §8.8. Do not re-litigate.
 - Pieces are drawn 0.25" undersized (`JOINT_REVEAL_IN`) so every joint reads as
   a shadow line. Layout, counts and takeoff are unaffected.
 - The retained fill is darker than the turf on purpose: the top of the fill must
-  never be the lightest thing in frame.
-- `Bounds` was dropped for the SPEC §13 fallback: it fought `OrbitControls` over
-  the camera target. The frustum is fitted directly, in a `useLayoutEffect` keyed
-  on values, never per frame.
+  never be the lightest thing in frame. Measured at 1440x900: wall face over
+  turf 1.45, fill top over turf 0.75, against §13 targets of 1.4 and 0.8.
+- `Bounds` was dropped for the SPEC §13 fallback: it fought `OrbitControls`.
+  The frustum is fitted directly in a `useLayoutEffect` keyed on values.
 - The camera frames the wall's own bounding box, not a bounding sphere, and not
-  a box that includes the scale figure. Including the figure is what aimed the
-  old camera at the top of the retained fill.
+  a box that includes the scale figure.
+- The safe area is not concentric with the canvas, so the aim point is offset to
+  put the wall's centre at the safe area's centre. Off-axis perspective stretches
+  the projection, so the fit runs one measured correction pass: project, compare,
+  rescale. Two placements per layout change, never per frame. `setViewOffset` was
+  rejected because it desynchronises `OrbitControls`.
 - `HumanFigure` yaws toward the camera in `useFrame` rather than using drei's
-  `<Billboard>`, which leaned the silhouette when the camera rose. It is a flat
-  cutout, so it foreshortens at high camera angles.
-- `oxlint` reports one `react/immutability` warning in `Scene.tsx`. It is a false
-  positive on R3F's imperative camera API and no disable directive suppresses
-  it. Lint still exits 0.
+  `<Billboard>`, which leaned the silhouette. It is a flat cutout, so it
+  foreshortens at high camera angles, and that reads more now that the wall is
+  larger.
+- The retained mass is a finite five-face wedge: vertical only at the wall,
+  sloping to grade at 1.5:1 on the rear and both ends. Its footprint derives in
+  `model/site.ts`, terrace depth `max(10 ft, 3 × finished height)` and slope run
+  `1.5 × fill height`. The end slopes are ruled surfaces that converge to a
+  vertical line at each end of the wall. A vertical line is not a cut face, and
+  widening the base's front edge to remove it would have created one.
+- `<ContactShadows />` was removed from §13 with cause, not dropped. drei's blur
+  pass renders a `blurPlane` pinned to the world origin through the component's
+  own orthographic camera. Offsetting the group or lifting it above grade puts
+  that plane outside the frustum and the pass clears the render target instead
+  of blurring it, which is why no parameter sweep produced anything. Recentred
+  at the origin the blur works, but then the ground plane at y = 0 fills the
+  depth pass. With a ground plane at y = 0 there is no position that works.
 
 **Review method**
 
 - Screenshots are a review artifact and the first screenshot is a deliverable.
   Capture the viewport; the page does not scroll, the panels do.
-- A verification script's pixel probe reported 0.999 for every configuration
-  because it never separated the wall from the bank by colour. Deleted. A metric
-  that cannot fail is worse than no metric. Any replacement must be able to
-  report a failure.
+- A pixel probe once reported 0.999 for every configuration because it never
+  separated the wall from the bank by colour. Deleted. Any replacement metric
+  must be able to report a failure, and the sample boxes do not move until the
+  numbers pass.
 
 ## Open items
 
-Owned by block 2E:
+Owned by block 3:
 
-- The wall is 34 percent of the window's width and 16 percent of its height.
-- The camera is still high enough that the top of the fill is the largest shape
-  in frame. Target about 15 degrees above horizontal.
-- The frustum is fitted on width only. SPEC §13 already requires both axes; code
-  and spec diverge until 2E closes it.
-- The retained bank's rear edge and right end face are in frame at both desktop
-  sizes and it reads as a slab on a table.
-- Ground, bank and wall face are too close in value. The grade change is only
-  legible from the wall itself.
-- `<ContactShadows />` must be confirmed mounted and visible at the base of the
-  wall.
-- The badge still says `built in one evening`.
-- The left card overflows its height cap, so `Cap course` sits below the fold.
-  The pinned footer is unaffected.
-- At 390px the control panel's scroll area collapses to about one row.
+- SPEC §6 still describes `Scene.tsx` as "Canvas, lights, Environment,
+  ContactShadows, Bounds". Three of those five are gone.
+- At 390px the control card's scroll area is about one row. Mobile is stacked
+  with a fixed-height canvas (§13), so the card belongs in normal page flow and
+  must not inherit the desktop card's height cap.
 
-Not owned by any block yet:
+Accepted, no action:
 
-- The `workers.dev` hostname doubles the project name. Cosmetic. Point a
-  subdomain only if time is left over.
-- `docs/reports/2C.md` still describes the deleted pixel probe. It is a closed
-  record and was left alone.
+- The control card overflows 740px of frame height on desktop, so `Cap course`
+  needs a scroll. The pinned footer is unaffected and the scroll works.
+- The `workers.dev` hostname doubles the project name. Cosmetic.
+- `docs/reports/2C.md` still describes the deleted pixel probe. Closed record,
+  left alone.
 
 ## Verified reference numbers
 
@@ -229,23 +224,48 @@ with `range={derived.blockCount}`, and `takeoff.ts` bills `qty:
 derived.blockCount`. There is no second count anywhere.
 
 A copied link reproduces the wall including a non-first colorway and caps off.
-Four sets of junk params fell back to defaults without throwing. 21 of 21 locked
+Four sets of junk params fell back to defaults without throwing. 22 of 22 locked
 controls are inert and show a lock and an hour estimate.
 
-## Block 2D measurements
+Roadmap pill reads `Roadmap · 22 planned · 85h`, both derived. Hand count: 19
+registry entries (family 5, geometry 5, business 5, platform 2, technical 2)
+plus 3 locked SKUs; 78 registry hours plus 7 SKU hours.
 
-At 1440x900 the safe rect is 704x852 at origin (368, 24); at 1280x800 it is
-544x752 at the same origin. Symmetric, 368 px of panel plus margin per side.
-Wall projected bounding box, fraction of the safe rect:
+## Framing measurements
 
-| Config | Viewport | Box px | of safe W | of safe H |
-|---|---|---|---|---|
-| Garden wall 20'×3 | 1440×900 | 485×147 | 0.689 | 0.173 |
-| Backyard terrace 40'×6 | 1440×900 | 486×141 | 0.690 | 0.165 |
-| Driveway edge 60'×2 | 1440×900 | 484×98 | 0.688 | 0.115 |
-| Default 24'×4 | 1440×900 | 486×151 | 0.690 | 0.177 |
-| Backyard terrace 40'×6 | 1280×800 | 374×109 | 0.688 | 0.145 |
+2D, for the record: safe rect 704x852 at 1440x900, portrait, wall at 0.69 of
+safe width and 34 percent of window width. The width fraction was on target and
+the photograph was wrong. That is the argument that produced 2E.
 
-The width fraction is on target at 0.69 in every case and the picture still
-fails. That is the second time a width metric has passed while the photograph
-was wrong, and it is the argument for 2E.
+2E: safe rect 1048x740 at (368, 24), landscape. Collapsed, 1328x740 at (88, 24).
+At 1280x800, 888x640. Wall at 49 percent of window width.
+
+| Config | Viewport | Box px | of safe W | of safe H | Binds |
+|---|---|---|---|---|---|
+| Garden wall 20'×3 | 1440×900 | 710×173 | 0.677 | 0.234 | width |
+| Backyard terrace 40'×6 | 1440×900 | 710×165 | 0.677 | 0.223 | width |
+| Driveway edge 60'×2 | 1440×900 | 710×105 | 0.677 | 0.142 | width |
+| Default 24'×4 | 1440×900 | 710×178 | 0.677 | 0.241 | width |
+| Garden wall 20'×3 | 1280×800 | 602×144 | 0.678 | 0.225 | width |
+| Backyard terrace 40'×6 | 1280×800 | 602×137 | 0.678 | 0.214 | width |
+| Driveway edge 60'×2 | 1280×800 | 602×87 | 0.678 | 0.136 | width |
+| Default 24'×4 | 1280×800 | 602×148 | 0.678 | 0.231 | width |
+
+Width binds in every case, at both viewports, for every configuration the
+controls allow. 2F confirmed the table unchanged, and §13's vertical target was
+corrected against it: the vertical field is composed, not filled.
+
+Luminance at 1440x900, Backyard terrace, Gray Granite: wall face 0.1164, turf in
+front 0.0801, terrace top 0.0608. Wall over turf 1.453 against a target of 1.4,
+fill over turf 0.759 against a target of 0.8.
+
+Derived site per preset, from `model/site.ts`:
+
+| Preset | Fill height | Terrace depth | Slope run |
+|---|---|---|---|
+| Garden wall 20'×3 | 2.00 ft | 10.00 ft (floor) | 3.00 ft |
+| Backyard terrace 40'×6 | 4.00 ft | 12.75 ft | 6.00 ft |
+| Driveway edge 60'×2 | 1.33 ft | 10.00 ft (floor) | 2.00 ft |
+| Default 24'×4 | 2.67 ft | 10.00 ft (floor) | 4.00 ft |
+
+The 10 ft floor binds for three of the four presets.
