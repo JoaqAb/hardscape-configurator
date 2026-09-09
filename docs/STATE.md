@@ -9,23 +9,21 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 1B code complete and reviewed, deploy pending.** Commit `b4dba74`.
+**Block 1 closed. Block 2A (takeoff) complete.** Commits `f6526a2`, `c97f8dc`,
+`10d97be`.
 
-The 1B report was reviewed against the spec. All three reported deviations are
-accepted and have been written into `SPEC.md` (§8.8 terrain, §13 tone mapping),
-so they are no longer deviations. One defect was found and is pending: see
-`Tumbled Ashlar` under open items.
+Live: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
 - Block 0 (scaffolding) closed, commit `81b5de5`.
 - Block 1A (catalog + wall model, zero three imports) closed, commit `df1b33c`.
 - Block 1A colorway correction closed, commit `65052d9`.
 - Block 1B (R3F scene, control panel) closed, commit `b4dba74`.
-- **Blocked**: Cloudflare Pages deploy. `wrangler` is not authenticated on this
-  machine and `wrangler login` is interactive. Block 1 does not close until the
-  public URL exists.
-- **Next after deploy**: Block 2, split into 2A takeoff, 2B registry + presets +
-  URL state, 2C 90 degree return. Order and the 2C fallback are in
-  `docs/EXECUTION.md`.
+- Block 1 closed by the deploy. The `Tumbled Ashlar` rename and the oxlint
+  comment shipped with it.
+- Block 2A (pricing, takeoff model, TakeoffPanel) complete.
+- **The live URL still serves the block 1 build**, without the takeoff. It has
+  to be redeployed; see the standing rules in `docs/EXECUTION.md`.
+- **Next**: 2B (registry, presets, URL state), then 2C (90 degree return).
 
 ## Environment
 
@@ -39,6 +37,14 @@ because three 0.186 ships no declarations of its own.
 Supabase project `kxnkrlpvhibkzoktzcgd`. Table `public.leads` provisioned, RLS
 on, `anon` holds INSERT only. `.env` is present and gitignored. **Do not create
 or migrate tables.**
+
+Hosting is Cloudflare Workers static assets, not a legacy Pages project: Pages
+was folded into Workers. Redeploy with `npx wrangler deploy`. The failure modes
+are documented in `docs/EXECUTION.md`.
+
+Config lives in `store/useConfigurator.ts` (zustand); `App.tsx` only reads it
+through a selector and there is no `useState` in the app. URL state in 2B mounts
+directly on the store, with no migration first.
 
 ## Decisions taken beyond the spec
 
@@ -59,6 +65,9 @@ or migrate tables.**
   used it becomes `Tumbled Ashlar`.
 - The engineered wall notice keys on wall height **excluding caps** (SPEC §9).
   6 courses is exactly 48" and does not trigger it; the 7th course does.
+- Clipped blocks bill as whole units: the builder buys the block and cuts it on
+  site. 84 instances is 84 units, and the weight is therefore delivered weight,
+  not in-wall weight.
 - Pieces are drawn 0.25" undersized (`JOINT_REVEAL_IN`) so every joint reads as
   a shadow line. Layout, counts and takeoff are unaffected.
 - `Bounds` was dropped for the fallback SPEC §13 allows: it fought
@@ -75,18 +84,24 @@ or migrate tables.**
 
 ## Open items
 
-- Cloudflare Pages deploy not yet done. It is the closing gate of block 1.
-  `wrangler` auth is a manual step outside the agent: `npx wrangler login` in a
-  real terminal, or `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` exported in
-  the shell that launches the agent. Never in a prompt. `wrangler pages project
-  create` must run before `pages deploy`, or the deploy opens an interactive
-  prompt and hangs.
-- Rename the active SKU `Tumbled Ashlar` to `Tumbled Ashlar` and grep the
-  repo for all six struck names.
-- Confirm where the config lives. The 1B report says App derives once, which
-  does not say whether the config sits in `store/useConfigurator.ts` as SPEC §5
-  and §6 require. URL state in 2B depends on the answer.
+- **Redeploy.** The live URL serves the block 1 build, without the takeoff.
+- **Rounding defect.** The lines read $2,058 + $292 + $109 + $38 = $2,497 and
+  the estimated total shows $2,496. Round once, and make the total the sum of
+  the rounded lines. On a customer-facing quote, an arithmetic that does not add
+  up is the first thing anyone notices.
+- **Unrequested stack change.** `wrangler pages project create` added
+  `@cloudflare/vite-plugin` to devDependencies, put `cloudflare()` into
+  `vite.config.ts` and replaced the `preview` script with `wrangler dev`.
+  Decision: keep `wrangler` (the deploy needs it), remove the plugin and restore
+  `preview` to `vite preview`. A host-specific plugin in the build config
+  contradicts the portability claim of SPEC §1 and nobody chose it. If removing
+  it breaks the deploy, put it back and say so.
+- A blind find-and-replace turned an open item in this file into "Rename the
+  active SKU `Tumbled Ashlar` to `Tumbled Ashlar`". Fixed. Renames in prose need
+  reading, not `sed`.
 - `VersionBadge` (SPEC §13) not yet reported as built. Lands in 2B.
+- The `workers.dev` hostname doubles the project name. Cosmetic. If it matters
+  for the client, point a subdomain in block 3; not worth time before that.
 - The takeoff panel must not visually outweigh the style and colorway controls
   (SPEC §1, §9).
 - The style grid shows active SKUs only. The three locked styles need
@@ -99,6 +114,14 @@ or migrate tables.**
   the SKU instead of being one flat number for all three.
 - Block and cap counts were removed from the control panel: they live in the
   takeoff now, and one number should not have two homes.
+- Presets carry dimensions only, never style or colorway (SPEC §14 says "the
+  whole config"; §1 says material selection is primary, and it wins).
+- URL params that are well formed but out of range fall back to defaults rather
+  than clamping. One rule for every number.
+- `LockedWallSku` carries `estimateHours`, because locked styles live in the
+  catalog and §10 requires every locked control to show an estimate.
+- Money is rounded exactly once, in `lineTotal`, so the estimate is the sum of
+  the rounded lines and the column adds up by hand.
 - The scale figure is a flat cutout, so it foreshortens when the camera is
   high. Correct for what it is; noted in case it reads as a defect.
 
@@ -135,6 +158,11 @@ bills `qty: derived.blockCount`. There is no second count anywhere.
 40' x 6, Tumbled Ashlar 36x18x8: 160 sq ft of face, 84 units, 14 caps, 2.6 tons
 of gravel, 4 tubes, $2,496 estimated, 39,077.5 lb. No engineered notice at 48"
 of block. At 7 courses the notice appears and units go to 98.
+
+The weight was checked by hand and lands exactly: 84 blocks at 3 ft³ plus 14
+caps at 1.25 ft³, all at 145 lb/ft³, is 39,077.5 lb. Gravel checks too: a 30"
+by 6" trench over 480" is 1.85 yd³, 2.6 tons at 1.4 ton/yd³. The estimated
+total does not check: see the rounding defect in open items.
 
 Caps off: the cap line disappears and adhesive drops from 4 tubes to 2, because
 only the top course joint is left to bed.
