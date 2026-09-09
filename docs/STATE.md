@@ -9,10 +9,10 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 1 closed. Block 2A (takeoff) complete.** Commits `f6526a2`, `c97f8dc`,
-`10d97be`.
+**Block 1 closed. Block 2A and 2B complete.** Commits `6cf33f7`, `a90259f`,
+`dbe4b89`.
 
-Live: `https://hardscape-configurator.hardscape-configurator.workers.dev`
+Live and current: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
 - Block 0 (scaffolding) closed, commit `81b5de5`.
 - Block 1A (catalog + wall model, zero three imports) closed, commit `df1b33c`.
@@ -20,16 +20,30 @@ Live: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 - Block 1B (R3F scene, control panel) closed, commit `b4dba74`.
 - Block 1 closed by the deploy. The `Tumbled Ashlar` rename and the oxlint
   comment shipped with it.
-- Block 2A (pricing, takeoff model, TakeoffPanel) complete.
-- **The live URL still serves the block 1 build**, without the takeoff. It has
-  to be redeployed; see the standing rules in `docs/EXECUTION.md`.
-- **Next**: 2B (registry, presets, URL state), then 2C (90 degree return).
+- Block 2A (pricing, takeoff model, TakeoffPanel) complete, commits `f6526a2`,
+  `c97f8dc`, `10d97be`.
+- Block 2B (feature registry, LockedControl, tabs, presets, URL state,
+  VersionBadge) complete. Redeployed and verified against the public URL.
+- **2C reordered.** It is now the presentation pass (camera, terrain, left
+  column), not the 90 degree return. The reason is in `docs/EXECUTION.md`:
+  a screenshot of the deployed app showed the wall taking about a sixth of the
+  canvas and `Copy link` below the fold.
+- The 90 degree return is now a locked registry row and lives in
+  `If time remains`, after block 3.
+- **Next**: 2C, then block 3 (lead capture, README).
 
 ## Environment
 
 React 19.2.8 · three 0.186.0 · @react-three/fiber 9.7.0 · @react-three/drei
 10.7.8 · zustand 5.0.15 · @supabase/supabase-js 2.116.0 · tailwindcss 4.2.5 via
 @tailwindcss/vite · vite 8.2.2 · typescript 6.0.2 · @types/three 0.185.4
+
+`wrangler` is a devDependency and `npm run deploy` wraps `wrangler deploy`.
+`wrangler.jsonc` carries `assets.directory`. `@cloudflare/vite-plugin` was
+removed: a host-specific plugin in the build config contradicts SPEC §1.
+`npm audit` reports three high advisories, all `wrangler` to `miniflare` to
+`sharp`. Tooling only, never in the bundle. Do not run `audit fix --force`: it
+breaks wrangler. Disclosed in the README per §15.
 
 No peer dependency conflicts. `@types/three` is an explicit devDependency
 because three 0.186 ships no declarations of its own.
@@ -68,6 +82,19 @@ directly on the store, with no migration first.
 - Clipped blocks bill as whole units: the builder buys the block and cuts it on
   site. 84 instances is 84 units, and the weight is therefore delivered weight,
   not in-wall weight.
+- Money is rounded once, and the estimated total is the sum of the rounded
+  lines rather than the rounding of the sum.
+- Presets set dimensions only, never style or colorway (SPEC §14).
+- Out of range params fall back to defaults instead of clamping (SPEC §12).
+- Locked wall SKUs carry `estimateHours` in `catalog.ts`; the registry
+  deliberately holds no wall styles (SPEC §10). One number, one home.
+- The roadmap groups (geometry, business, platform, technical: 13 entries)
+  render in the right panel under the takeoff, not in the left panel, so they
+  do not compete with style and colorway. Verified visually at 1440x900.
+- Screenshots are a review artifact. The page is `h-full` with three
+  independently scrolling columns, so `fullPage` returns the viewport and
+  nothing more; capture the viewport, and reset a column's scroll before
+  shooting if a click moved it.
 - Pieces are drawn 0.25" undersized (`JOINT_REVEAL_IN`) so every joint reads as
   a shadow line. Layout, counts and takeoff are unaffected.
 - `Bounds` was dropped for the fallback SPEC §13 allows: it fought
@@ -84,28 +111,21 @@ directly on the store, with no migration first.
 
 ## Open items
 
-- **Redeploy.** The live URL serves the block 1 build, without the takeoff.
-- **Rounding defect.** The lines read $2,058 + $292 + $109 + $38 = $2,497 and
-  the estimated total shows $2,496. Round once, and make the total the sum of
-  the rounded lines. On a customer-facing quote, an arithmetic that does not add
-  up is the first thing anyone notices.
-- **Unrequested stack change.** `wrangler pages project create` added
-  `@cloudflare/vite-plugin` to devDependencies, put `cloudflare()` into
-  `vite.config.ts` and replaced the `preview` script with `wrangler dev`.
-  Decision: keep `wrangler` (the deploy needs it), remove the plugin and restore
-  `preview` to `vite preview`. A host-specific plugin in the build config
-  contradicts the portability claim of SPEC §1 and nobody chose it. If removing
-  it breaks the deploy, put it back and say so.
-- A blind find-and-replace turned an open item in this file into "Rename the
-  active SKU `Tumbled Ashlar` to `Tumbled Ashlar`". Fixed. Renames in prose need
-  reading, not `sed`.
-- `VersionBadge` (SPEC §13) not yet reported as built. Lands in 2B.
+- **The scene does not present the product.** At 1440x900 the wall occupies
+  about a sixth of the canvas, the camera sits high enough that most of the
+  frame is the top of the retained fill, the turf edge cuts a hard horizontal
+  line across the canvas, and the wall face and the turf are close in value so
+  the courses and the setback do not read. SPEC §13 now carries the default
+  framing rule. This is 2C.
+- **The left column overflows by 444px at 1440x900.** Product family's six
+  stacked rows push the presets, both sliders, the cap toggle, the finished
+  height and `Copy link` below the fold. `Copy link` is what SPEC §12 calls the
+  bridge to lead capture, and a visitor does not see it. This is 2C.
+- The right panel is fine: 900px of content in 900px of viewport, the whole
+  roadmap visible through `Export to DWG`, and it does not outweigh the left
+  column. Verified from a screenshot, not from a description.
 - The `workers.dev` hostname doubles the project name. Cosmetic. If it matters
   for the client, point a subdomain in block 3; not worth time before that.
-- The takeoff panel must not visually outweigh the style and colorway controls
-  (SPEC §1, §9).
-- The style grid shows active SKUs only. The three locked styles need
-  `LockedControl`, which arrives with the block 2 feature registry.
 - Unit prices are computed into `TakeoffLine.unitPrice` but not rendered: at
   320px the panel shows label, quantity and line total only (SPEC §9 asks for
   compact). The field is there when a wider layout wants it.
@@ -122,6 +142,14 @@ directly on the store, with no migration first.
   catalog and §10 requires every locked control to show an estimate.
 - Money is rounded exactly once, in `lineTotal`, so the estimate is the sum of
   the rounded lines and the column adds up by hand.
+- The camera frames the wall's own bounding box and fits on width, not on a
+  bounding sphere. Do not put the scale figure back into the framing box: that
+  is what aimed the old camera at the top of the retained fill.
+- Depth fog was tried to hide the ground plane's edge and reverted. It washed
+  out the whole image. A 4000 ft ground plane puts the edge on the horizon
+  instead, at no cost.
+- `Copy link` and `Finished height` are pinned to the foot of the left column,
+  outside the scroll. Anything added to that column must not change that.
 - The scale figure is a flat cutout, so it foreshortens when the camera is
   high. Correct for what it is; noted in case it reads as a defect.
 
@@ -162,7 +190,19 @@ of block. At 7 courses the notice appears and units go to 98.
 The weight was checked by hand and lands exactly: 84 blocks at 3 ft³ plus 14
 caps at 1.25 ft³, all at 145 lb/ft³, is 39,077.5 lb. Gravel checks too: a 30"
 by 6" trench over 480" is 1.85 yd³, 2.6 tons at 1.4 ton/yd³. The estimated
-total does not check: see the rounding defect in open items.
+total read $2,496 against lines summing to $2,497; fixed in 2B by rounding once.
 
 Caps off: the cap line disappears and adhesive drops from 4 tubes to 2, because
 only the top course joint is left to bed.
+
+## Block 2B verification
+
+All three presets check by hand against the parity rule. 20' x 3 gives 22 units
+(7 on odd courses, 8 on even, because the half block that opens an even course
+adds one), 7 caps, $758. 60' x 2 gives 41 units (20 plus 21), 20 caps, $1,642.
+40' x 6 gives 84 units, 14 caps, $2,497, and the lines now add up.
+
+A copied link reproduces the wall including a non-first colorway (Buff Blend,
+third on its SKU) and caps off. Four sets of junk params fell back to defaults
+without throwing. 21 of 21 locked controls are inert and show a lock and an
+hour estimate.

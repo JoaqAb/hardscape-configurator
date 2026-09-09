@@ -96,15 +96,20 @@ locked styles in `StyleGrid`, `VersionBadge`, the three presets of §14,
 finished. Requires the config to live in the zustand store; if it does not yet,
 move it there first.
 
-**2C — 90° return.** Highest risk in the block: it touches `deriveWall`, the
-corner overlap in the takeoff and the camera fit at once. It goes last so that
-failing it costs nothing already earned.
+**2C — presentation pass.** The camera, the terrain and the left column. Nothing
+new is modelled; what exists is made to read. This was originally the 90°
+return, and it was reordered after looking at a screenshot of the deployed app:
+the wall occupied roughly a sixth of the canvas, seen from high enough that the
+visitor mostly saw the top of the retained fill, and the `Copy link` button sat
+below the fold. A second run of blocks added to that scene would have added
+nothing a visitor could see. **The demo is judged on the first screenshot, so
+the first screenshot is a deliverable.**
 
-**Fallback for 2C**: if the corner is not clean within its budget, revert it and
-move the 90° return into the locked registry alongside `Corner types`. A locked
-row with an honest hour estimate is a better outcome than blocks intersecting at
-the corner in a live demo. Take that exit deliberately, not by running out of
-time.
+**The 90° return moves out of block 2** and into `If time remains`, and enters
+the locked registry now (`90-degree-return`, geometry, 2h) so the roadmap is
+honest whether or not it gets built. It is real geometry work and it is worth
+doing, but not before the scene it would appear in is worth looking at, and not
+before lead capture, which is an acceptance criterion and this is not.
 
 **Acceptance**
 - takeoff quantities match the instance counts in the scene
@@ -127,8 +132,11 @@ Supabase insert, form, error states, README.
 
 ## If time remains
 
-Unlock features in this order of cost to impact: Export CSV, then Metric toggle,
-then Seat wall. **Do not start anything that cannot be finished.**
+Unlock features in this order of cost to impact: the 90° return, then Export
+CSV, then Metric toggle, then Seat wall. **Do not start anything that cannot be
+finished.** If the 90° return is started and the corner is not clean, revert it
+and leave the registry row locked. A locked row with an honest hour estimate is
+a better outcome than blocks intersecting at a corner in a live demo.
 
 ---
 
