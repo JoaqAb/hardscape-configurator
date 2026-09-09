@@ -106,6 +106,7 @@ src/
     types.ts             WallConfig, DerivedWall, TakeoffLine
     units.ts             in <-> ft, 12' 6" formatting
     wall.ts              deriveWall(config, catalog) -> DerivedWall
+    site.ts              deriveSite(derived) -> terrace footprint and slopes
     takeoff.ts           computeTakeoff(derived, pricing) -> TakeoffLine[]
     rng.ts               deterministic seeded PRNG
   store/
@@ -219,10 +220,15 @@ but direct evidence that the model computes rather than stores constants.
    behind the wall, so the wall reads as retaining something rather than as a
    freestanding wall on a lawn. Simple geometry, no mesh deformation. A
    separate slope plane rising to wall height was tried and removed: at every
-   camera angle it read as a floating panel. Size the terrain to the wall plus a
-   margin and keep its outer edges outside the default frustum: a visible
-   straight edge where the ground stops is the same floating-panel failure in
-   another form.
+   camera angle it read as a floating panel. The ground plane is sized so its edge falls on
+   the horizon: a visible straight edge where the ground stops is the same
+   floating-panel failure in another form. The retained mass is treated the
+   opposite way. It is finite, fully in frame, vertical only at the wall, and
+   sloping back to grade at 1.5:1 on its rear and both ends. Extending it past
+   the frustum was tried in block 2E and removed: earth without an end reads as
+   a plateau the wall happens to stand in front of, and it hides the one thing
+   the wall is for. What must never be visible is a cut face, not an edge.
+   Footprint and slopes derive from the wall in `model/site.ts`.
 9. **Human scale**: a flat 6 ft silhouette beside the wall. The cheapest
    existing detail that makes a 3D demo read as professional.
 
@@ -431,7 +437,15 @@ marginal quality gain on matte concrete.
 
 Use an explicit rig: a low `ambientLight` for fill, one `directionalLight` as
 the key with `castShadow` enabled, and a dim second directional as rim light
-from the opposite side. Plus `<ContactShadows />`, which is computed locally.
+from the opposite side.
+
+`<ContactShadows />` was specified here and removed: mounted correctly it
+rendered nothing measurable at the wall's base, and the alternatives all cost
+more than they bought. A cast shadow that falls toward the camera needs a key
+behind the wall, which unlights the face that is the product; anything else adds
+a light this rig does not allow. A painted dark strip at the toe would be a
+drawing of a shadow, not a shadow, and this file does not ship those.
+
 No SoftShadows, no shadow map tuning beyond setting a sane map size and
 adjusting the shadow camera frustum to the wall bounds.
 
@@ -444,13 +458,22 @@ selection is the product (§1).
 below the terrain, and `maxPolarAngle` tight enough that it cannot look straight
 down either.
 
-**Default framing.** The wall is the subject. It spans roughly two thirds of the
-canvas width **and about half its height**, seen from about 15 degrees above
-horizontal and about 30 degrees off the face, so that the face, one end, the
+**Default framing.** The wall is the subject. It spans roughly two thirds of the safe
+area's width, seen from about 15 degrees above horizontal and about 30 degrees off the face, so that the face, one end, the
 running bond and the setback all read at once. That is also how a mason
 photographs a finished wall. A high camera shows the top of the retained fill,
 which is the one part of the job nobody wants to look at. The camera targets the
 wall's bounding box, not the terrain's.
+
+The wall does not fill the frame vertically and cannot: at every configuration
+these controls allow, the projected height lands between 0.14 and 0.24 of the
+safe area and width is the binding constraint. An earlier draft asked for about
+half the height as well, which is unreachable for a 40 ft by 4 ft object without
+abandoning the width target. **The vertical field is composed, not filled.**
+Lower ground in the foreground, the terrace and its slopes behind, the horizon
+above: the wall is the subject of the photograph, not its only content. Fitting
+both axes and taking the constraining one stays the rule, because a taller wall
+or a narrower frame can make height bind.
 
 Fit the frustum on both axes and take the constraining one. At 1440 by 900 the control card and the takeoff bar leave a safe area around
 1050 by 700, which is landscape. It was portrait until block 2E, and a
@@ -461,8 +484,9 @@ axes and take the constraining one.
 **No fog.** It was tried to hide the far edge of the ground and it washed the
 whole image, for the same reason ACES was dropped: flat matte concrete has
 little tonal range to spare. Push the horizon out with a large ground plane
-instead. The retained bank gets the same treatment: its side and rear edges have
-to leave the frustum too, or the fill reads as a slab sitting on a table.
+instead. The retained mass gets the opposite treatment: it is finite and it returns to
+grade, so it has edges but no cut faces (§8.8). A slab on a table and an
+infinite plateau are the same mistake seen from two sides.
 
 Three values have to be distinguishable in frame: the lower ground, the top of
 the retained fill, and the wall face. The fill is deliberately darker than the

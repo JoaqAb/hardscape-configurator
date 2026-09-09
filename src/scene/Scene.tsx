@@ -1,4 +1,4 @@
-import { ContactShadows, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useLayoutEffect } from 'react'
 import { MathUtils, Vector3 } from 'three'
@@ -279,20 +279,6 @@ export function Scene({ derived }: { derived: DerivedWall }) {
           which flattened the pass to a uniform tint and left the wall with no
           contact shadow at all. Bounding it to the strip the wall stands on
           gives the pass something to contrast against. */}
-      {/* SPEC §13 requires this. It is mounted and, on drei 10.7.8 with three
-          0.186, it renders nothing here: no darkening is measurable at the wall
-          base at any opacity, blur, scale, height or `far` tried, including
-          opacity 1 with a red tint. Diagnosed, not silently accepted; see the
-          2E report. */}
-      <ContactShadows
-        position={[runFt / 2, 0.05, 0]}
-        scale={Math.max(runFt, 22) * 2}
-        resolution={1024}
-        blur={2}
-        opacity={0.5}
-        far={10}
-      />
-
       <OrbitControls
         makeDefault
         minPolarAngle={MathUtils.degToRad(55)}

@@ -120,6 +120,12 @@ face. 2D fitted the wall correctly into a safe area that was too small and too
 portrait; this block fixes the safe area rather than the fit. After it, the
 scene is done and block 3 is lead capture and README only.
 
+**2F: the site.** The retained mass becomes a finite landform that returns to
+grade instead of running past the frustum, its footprint derives from the wall
+in `model/site.ts`, `<ContactShadows />` is diagnosed and then fixed or dropped,
+and §13's unreachable vertical framing target is corrected against the 2E
+measurements. The scene closes here.
+
 **The 90° return moves out of block 2** and into `If time remains`, and enters
 the locked registry now (`90-degree-return`, geometry, 2h) so the roadmap is
 honest whether or not it gets built. It is real geometry work and it is worth
