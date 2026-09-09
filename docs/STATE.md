@@ -9,28 +9,61 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 1 closed. Block 2A and 2B complete.** Commits `6cf33f7`, `a90259f`,
-`dbe4b89`.
+**Block 2D closed.** Commits `f385a3a`, `cb68179`. Full bleed is live.
 
 Live and current: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
-- Block 0 (scaffolding) closed, commit `81b5de5`.
-- Block 1A (catalog + wall model, zero three imports) closed, commit `df1b33c`.
-- Block 1A colorway correction closed, commit `65052d9`.
-- Block 1B (R3F scene, control panel) closed, commit `b4dba74`.
-- Block 1 closed by the deploy. The `Tumbled Ashlar` rename and the oxlint
-  comment shipped with it.
-- Block 2A (pricing, takeoff model, TakeoffPanel) complete, commits `f6526a2`,
-  `c97f8dc`, `10d97be`.
+- Block 0 (scaffolding) closed, `81b5de5`.
+- Block 1A (catalog + wall model, zero three imports) closed, `df1b33c`.
+  Colorway correction, `65052d9`.
+- Block 1B (R3F scene, control panel) closed, `b4dba74`. Block 1 closed by the
+  deploy.
+- Block 2A (pricing, takeoff model, TakeoffPanel), `f6526a2`, `c97f8dc`,
+  `10d97be`.
 - Block 2B (feature registry, LockedControl, tabs, presets, URL state,
-  VersionBadge) complete. Redeployed and verified against the public URL.
-- **2C reordered.** It is now the presentation pass (camera, terrain, left
-  column), not the 90 degree return. The reason is in `docs/EXECUTION.md`:
-  a screenshot of the deployed app showed the wall taking about a sixth of the
-  canvas and `Copy link` below the fold.
-- The 90 degree return is now a locked registry row and lives in
-  `If time remains`, after block 3.
-- **Next**: 2C, then block 3 (lead capture, README).
+  VersionBadge), `6cf33f7`, `a90259f`, `dbe4b89`.
+- Block 2C (presentation pass) complete.
+- Block 2D (full-bleed layout) complete. Canvas at viewport size, two floating
+  cards, measured safe area in `store/useViewport.ts`, camera fitted to the
+  safe rect rather than to the canvas.
+- The 90 degree return is a locked registry row and lives in `If time remains`.
+- **Next**: block 2E, the legibility pass. It absorbs the four scene fixes that
+  used to open block 3, so block 3 is lead capture and README only.
+
+## Why block 2E exists
+
+2D delivered what it promised and the picture still does not work. Measured at
+1440x900: safe rect 704x852, wall projected to 486x141 px. That is 34 percent
+of the window's width and 16 percent of its height. Two thirds of the window is
+panel, and the subject of the demo is a small band in a large empty field.
+
+The panels' footprint, not the camera, is what costs the wall its size. Fitting
+the wall to a 704 px safe area inside a 1440 px window is working correctly and
+producing a bad photograph. 2E buys the width back and separates the values in
+the scene, which are currently close enough that the retained bank and the
+ground read as one surface.
+
+Decisions taken for 2E:
+
+- The takeoff moves out of the right column and into a full-width bar along the
+  bottom. It returns 320 px on the axis the wall is measured on, and a
+  horizontal row of figures suits a sales summary at least as well as a
+  vertical list (SPEC §9).
+- The roadmap leaves the takeoff panel and becomes a collapsed pill at the top
+  right: `Roadmap · N planned · Nh`, both numbers derived from `features.ts`
+  plus the locked SKUs, never typed. Expanding is one click, so SPEC §10 still
+  holds and the header is a stronger statement than the open list was: it is
+  the budget of the next phase, in two numbers.
+- The left control card stays open by default and gains a collapse control.
+  Collapsing writes a smaller safe rect and 2D's existing refit path reframes
+  the camera. No new machinery.
+- With the takeoff on the bottom the safe area is roughly 1050x700, which is
+  landscape for the first time. The both-axes fit SPEC §13 requires becomes
+  meaningful, and 2E implements it.
+- `built in one evening` comes off the badge. It will not be one evening, §15
+  asks for the real number, and the README is where a time figure belongs with
+  its context. On the product it reads as an apology offered before anyone has
+  formed an opinion.
 
 ## Environment
 
@@ -45,113 +78,127 @@ removed: a host-specific plugin in the build config contradicts SPEC §1.
 `sharp`. Tooling only, never in the bundle. Do not run `audit fix --force`: it
 breaks wrangler. Disclosed in the README per §15.
 
-No peer dependency conflicts. `@types/three` is an explicit devDependency
-because three 0.186 ships no declarations of its own.
+`@types/three` is an explicit devDependency because three 0.186 ships no
+declarations of its own. No peer dependency conflicts.
 
 Supabase project `kxnkrlpvhibkzoktzcgd`. Table `public.leads` provisioned, RLS
 on, `anon` holds INSERT only. `.env` is present and gitignored. **Do not create
 or migrate tables.**
 
 Hosting is Cloudflare Workers static assets, not a legacy Pages project: Pages
-was folded into Workers. Redeploy with `npx wrangler deploy`. The failure modes
-are documented in `docs/EXECUTION.md`.
+was folded into Workers. Redeploy with `npx wrangler deploy`. Failure modes are
+in `docs/EXECUTION.md`.
 
-Config lives in `store/useConfigurator.ts` (zustand); `App.tsx` only reads it
-through a selector and there is no `useState` in the app. URL state in 2B mounts
-directly on the store, with no migration first.
+Wall config lives in `store/useConfigurator.ts` (zustand) and `App.tsx` reads it
+through a selector. The measured safe area lives in a separate store,
+`store/useViewport.ts`, so it never reaches `urlState`. There is no `useState`
+in the app.
 
 ## Decisions taken beyond the spec
 
-- Catalog example dimensions changed to 36x18x8 / 24x16x6 / 18x12x4. The spec's
+**Model and catalog**
+
+- Catalog example dimensions are 36x18x8 / 24x16x6 / 18x12x4. The spec's
   original first two had identical volume, so "the largest SKU" was ambiguous.
-- `model/types.ts` exists (spec §6 lists it; `wall.ts` cannot be typed without
-  it). `TakeoffLine` deferred to block 2 with `takeoff.ts`.
 - Locked SKUs are a **separate type**, not a `WallSku` with `locked: true`. They
   carry no dimensions, so a discriminated union lets the compiler reject passing
-  a locked style to `deriveWall`.
-- Jitter is applied after clipping, so a block may protrude up to 0.15" past the
-  end of the run. Cosmetic, accepted.
-- `capForWallSku` derives cap geometry from the block rather than storing it.
-  Cap price lives in `pricing.ts`.
+  a locked style to `deriveWall`. They carry `estimateHours` in `catalog.ts`;
+  the registry holds no wall styles (SPEC §10). One number, one home.
 - Style names are descriptive per SPEC §7. The five original locked names were
   real manufacturer product lines and were replaced. `Outcropping` is also a
-  real line and has been struck from the §7 example list; the active SKU that
-  used it becomes `Tumbled Ashlar`.
+  real line; the active SKU that used it is `Tumbled Ashlar`.
+- `capForWallSku` derives cap geometry from the block rather than storing it.
+  Cap price is `sku.pricePerUnit * pricing.capPriceFactor`, so it scales with
+  the SKU instead of being one flat number.
+- Jitter is applied after clipping, so a block may protrude up to 0.15" past the
+  end of the run. Cosmetic, accepted.
+
+**Takeoff**
+
+- Clipped blocks bill as whole units: the builder buys the block and cuts it on
+  site. 84 instances is 84 units, and the weight is delivered weight, not
+  in-wall weight.
+- Money is rounded exactly once, in `lineTotal`, so the estimate is the sum of
+  the rounded lines and the column adds up by hand.
 - The engineered wall notice keys on wall height **excluding caps** (SPEC §9).
   6 courses is exactly 48" and does not trigger it; the 7th course does.
-- Clipped blocks bill as whole units: the builder buys the block and cuts it on
-  site. 84 instances is 84 units, and the weight is therefore delivered weight,
-  not in-wall weight.
-- Money is rounded once, and the estimated total is the sum of the rounded
-  lines rather than the rounding of the sum.
+- `TakeoffLine.unitPrice` is computed but not rendered. The field is there when
+  a wider layout wants it.
+- The cap line is omitted when caps are off rather than shown as a zero row.
+
+**Config and UI**
+
 - Presets set dimensions only, never style or colorway (SPEC §14).
-- Out of range params fall back to defaults instead of clamping (SPEC §12).
-- Locked wall SKUs carry `estimateHours` in `catalog.ts`; the registry
-  deliberately holds no wall styles (SPEC §10). One number, one home.
-- The roadmap groups (geometry, business, platform, technical: 13 entries)
-  render in the right panel under the takeoff, not in the left panel, so they
-  do not compete with style and colorway. Verified visually at 1440x900.
-- Screenshots are a review artifact. The page is `h-full` with three
-  independently scrolling columns, so `fullPage` returns the viewport and
-  nothing more; capture the viewport, and reset a column's scroll before
-  shooting if a click moved it.
+- Out of range URL params fall back to defaults instead of clamping (SPEC §12).
+  One rule for every number.
+- Block and cap counts were removed from the control panel: they live in the
+  takeoff. One number, one home.
+- `Finished height` and `Copy link` are pinned to the foot of the left card,
+  outside its scroll. Anything added to that card must not change that.
+- Colorway chips are two per row. Three at 320px truncated `Gray Granite`.
+- Panels are opaque, with no `backdrop-filter`. Readability over a rendered
+  image comes first, and the filter costs a repaint for a decorative gain.
+- `VersionBadge` is mounted twice with responsive visibility rather than
+  portaled.
+
+**Scene**
+
+- No fog (SPEC §13). It washed the image, the same failure mode as ACES. The
+  horizon is pushed out with a 4000 ft ground plane instead.
+- Tone mapping off (`<Canvas flat>`), and one turfed bank instead of a separate
+  slope plane. Both are now in SPEC §13 and §8.8. Do not re-litigate.
 - Pieces are drawn 0.25" undersized (`JOINT_REVEAL_IN`) so every joint reads as
   a shadow line. Layout, counts and takeoff are unaffected.
-- `Bounds` was dropped for the fallback SPEC §13 allows: it fought
-  `OrbitControls` over the camera target. The frustum is fitted directly, once
-  per dimension change, never per frame.
-- Tone mapping off (`<Canvas flat>`) and the single turfed bank in place of a
-  separate slope plane are both now in SPEC §13 and §8.8. Do not re-litigate.
-- `HumanFigure` yaws toward the camera in `useFrame` instead of using drei's
-  `<Billboard>`, which leaned the silhouette when the camera rose. This is a
-  facing angle, not a derivation.
-- `oxlint` reports one `react/immutability` warning in `Scene.tsx`. It is a
-  false positive on R3F's imperative camera API; neither an oxlint nor an
-  eslint disable directive suppresses it. Lint still exits 0.
+- The retained fill is darker than the turf on purpose: the top of the fill must
+  never be the lightest thing in frame.
+- `Bounds` was dropped for the SPEC §13 fallback: it fought `OrbitControls` over
+  the camera target. The frustum is fitted directly, in a `useLayoutEffect` keyed
+  on values, never per frame.
+- The camera frames the wall's own bounding box, not a bounding sphere, and not
+  a box that includes the scale figure. Including the figure is what aimed the
+  old camera at the top of the retained fill.
+- `HumanFigure` yaws toward the camera in `useFrame` rather than using drei's
+  `<Billboard>`, which leaned the silhouette when the camera rose. It is a flat
+  cutout, so it foreshortens at high camera angles.
+- `oxlint` reports one `react/immutability` warning in `Scene.tsx`. It is a false
+  positive on R3F's imperative camera API and no disable directive suppresses
+  it. Lint still exits 0.
+
+**Review method**
+
+- Screenshots are a review artifact and the first screenshot is a deliverable.
+  Capture the viewport; the page does not scroll, the panels do.
+- A verification script's pixel probe reported 0.999 for every configuration
+  because it never separated the wall from the bank by colour. Deleted. A metric
+  that cannot fail is worse than no metric. Any replacement must be able to
+  report a failure.
 
 ## Open items
 
-- **The scene does not present the product.** At 1440x900 the wall occupies
-  about a sixth of the canvas, the camera sits high enough that most of the
-  frame is the top of the retained fill, the turf edge cuts a hard horizontal
-  line across the canvas, and the wall face and the turf are close in value so
-  the courses and the setback do not read. SPEC §13 now carries the default
-  framing rule. This is 2C.
-- **The left column overflows by 444px at 1440x900.** Product family's six
-  stacked rows push the presets, both sliders, the cap toggle, the finished
-  height and `Copy link` below the fold. `Copy link` is what SPEC §12 calls the
-  bridge to lead capture, and a visitor does not see it. This is 2C.
-- The right panel is fine: 900px of content in 900px of viewport, the whole
-  roadmap visible through `Export to DWG`, and it does not outweigh the left
-  column. Verified from a screenshot, not from a description.
-- The `workers.dev` hostname doubles the project name. Cosmetic. If it matters
-  for the client, point a subdomain in block 3; not worth time before that.
-- Unit prices are computed into `TakeoffLine.unitPrice` but not rendered: at
-  320px the panel shows label, quantity and line total only (SPEC §9 asks for
-  compact). The field is there when a wider layout wants it.
-- The cap line is omitted when caps are off rather than shown as a zero row.
-- Cap price is `sku.pricePerUnit * pricing.capPriceFactor`, so it scales with
-  the SKU instead of being one flat number for all three.
-- Block and cap counts were removed from the control panel: they live in the
-  takeoff now, and one number should not have two homes.
-- Presets carry dimensions only, never style or colorway (SPEC §14 says "the
-  whole config"; §1 says material selection is primary, and it wins).
-- URL params that are well formed but out of range fall back to defaults rather
-  than clamping. One rule for every number.
-- `LockedWallSku` carries `estimateHours`, because locked styles live in the
-  catalog and §10 requires every locked control to show an estimate.
-- Money is rounded exactly once, in `lineTotal`, so the estimate is the sum of
-  the rounded lines and the column adds up by hand.
-- The camera frames the wall's own bounding box and fits on width, not on a
-  bounding sphere. Do not put the scale figure back into the framing box: that
-  is what aimed the old camera at the top of the retained fill.
-- Depth fog was tried to hide the ground plane's edge and reverted. It washed
-  out the whole image. A 4000 ft ground plane puts the edge on the horizon
-  instead, at no cost.
-- `Copy link` and `Finished height` are pinned to the foot of the left column,
-  outside the scroll. Anything added to that column must not change that.
-- The scale figure is a flat cutout, so it foreshortens when the camera is
-  high. Correct for what it is; noted in case it reads as a defect.
+Owned by block 2E:
+
+- The wall is 34 percent of the window's width and 16 percent of its height.
+- The camera is still high enough that the top of the fill is the largest shape
+  in frame. Target about 15 degrees above horizontal.
+- The frustum is fitted on width only. SPEC §13 already requires both axes; code
+  and spec diverge until 2E closes it.
+- The retained bank's rear edge and right end face are in frame at both desktop
+  sizes and it reads as a slab on a table.
+- Ground, bank and wall face are too close in value. The grade change is only
+  legible from the wall itself.
+- `<ContactShadows />` must be confirmed mounted and visible at the base of the
+  wall.
+- The badge still says `built in one evening`.
+- The left card overflows its height cap, so `Cap course` sits below the fold.
+  The pinned footer is unaffected.
+- At 390px the control panel's scroll area collapses to about one row.
+
+Not owned by any block yet:
+
+- The `workers.dev` hostname doubles the project name. Cosmetic. Point a
+  subdomain only if time is left over.
+- `docs/reports/2C.md` still describes the deleted pixel probe. It is a closed
+  record and was left alone.
 
 ## Verified reference numbers
 
@@ -161,48 +208,44 @@ even courses, cumulative setback 5" at the top course. Odd courses clip block 14
 to 12.00"; even courses open with an 18.00" half block and clip block 14 to
 30.00". `deriveWall` is deterministic across repeated calls.
 
-## Block 1B verification
-
-Production build served and driven in a headless browser: every style, every
-colorway, both slider extremes and the cap toggle, with zero console errors and
-zero page errors. Camera is stable at rest.
-
-Panel and scene agree because they read one derivation: at 40' x 6 courses the
-readout shows 84 units, 14 caps and a finished height of 4' 3", which is the
-1A hand calculation. Colorway survives a style switch: Charcoal chosen on the
-36" SKU is still Charcoal after switching to Weathered Fieldstone, and Gray
-Granite returns when a style that offers it is selected again.
-
-Instance ceiling is 1024; the largest configuration the controls allow, 80' by
+Instance ceiling is 1024. The largest configuration the controls allow, 80' by
 10 courses, derives 275 units.
 
-## Block 2A verification
+40' × 6, Tumbled Ashlar 36x18x8: 160 sq ft of face, 84 units, 14 caps, 2.6 tons
+of gravel, 4 tubes, $2,497 estimated, 39,077.5 lb. Checked by hand: 84 blocks at
+3 ft³ plus 14 caps at 1.25 ft³ at 145 lb/ft³ is 39,077.5 lb; a 30" by 6" trench
+over 480" is 1.85 yd³, 2.6 tons at 1.4 ton/yd³. At 7 courses the engineered
+notice appears and units go to 98. Caps off: the cap line disappears and
+adhesive drops from 4 tubes to 2.
 
-Takeoff and scene cannot disagree because they read one field. `wall.ts` sets
-`blockCount: blocks.length` from the array it has just built; `Wall.tsx` draws
-that array via `courseBlocks` with `range={derived.blockCount}`; `takeoff.ts`
-bills `qty: derived.blockCount`. There is no second count anywhere.
+All three presets check against the parity rule. 20' × 3 gives 22 units (7 on
+odd courses, 8 on even, because the half block that opens an even course adds
+one), 7 caps, $758. 60' × 2 gives 41 units, 20 caps, $1,642. 40' × 6 gives 84
+units, 14 caps, $2,497.
 
-40' x 6, Tumbled Ashlar 36x18x8: 160 sq ft of face, 84 units, 14 caps, 2.6 tons
-of gravel, 4 tubes, $2,496 estimated, 39,077.5 lb. No engineered notice at 48"
-of block. At 7 courses the notice appears and units go to 98.
+Panel and scene agree because they read one derivation. `wall.ts` sets
+`blockCount: blocks.length` from the array it built, `Wall.tsx` draws that array
+with `range={derived.blockCount}`, and `takeoff.ts` bills `qty:
+derived.blockCount`. There is no second count anywhere.
 
-The weight was checked by hand and lands exactly: 84 blocks at 3 ft³ plus 14
-caps at 1.25 ft³, all at 145 lb/ft³, is 39,077.5 lb. Gravel checks too: a 30"
-by 6" trench over 480" is 1.85 yd³, 2.6 tons at 1.4 ton/yd³. The estimated
-total read $2,496 against lines summing to $2,497; fixed in 2B by rounding once.
+A copied link reproduces the wall including a non-first colorway and caps off.
+Four sets of junk params fell back to defaults without throwing. 21 of 21 locked
+controls are inert and show a lock and an hour estimate.
 
-Caps off: the cap line disappears and adhesive drops from 4 tubes to 2, because
-only the top course joint is left to bed.
+## Block 2D measurements
 
-## Block 2B verification
+At 1440x900 the safe rect is 704x852 at origin (368, 24); at 1280x800 it is
+544x752 at the same origin. Symmetric, 368 px of panel plus margin per side.
+Wall projected bounding box, fraction of the safe rect:
 
-All three presets check by hand against the parity rule. 20' x 3 gives 22 units
-(7 on odd courses, 8 on even, because the half block that opens an even course
-adds one), 7 caps, $758. 60' x 2 gives 41 units (20 plus 21), 20 caps, $1,642.
-40' x 6 gives 84 units, 14 caps, $2,497, and the lines now add up.
+| Config | Viewport | Box px | of safe W | of safe H |
+|---|---|---|---|---|
+| Garden wall 20'×3 | 1440×900 | 485×147 | 0.689 | 0.173 |
+| Backyard terrace 40'×6 | 1440×900 | 486×141 | 0.690 | 0.165 |
+| Driveway edge 60'×2 | 1440×900 | 484×98 | 0.688 | 0.115 |
+| Default 24'×4 | 1440×900 | 486×151 | 0.690 | 0.177 |
+| Backyard terrace 40'×6 | 1280×800 | 374×109 | 0.688 | 0.145 |
 
-A copied link reproduces the wall including a non-first colorway (Buff Blend,
-third on its SKU) and caps off. Four sets of junk params fell back to defaults
-without throwing. 21 of 21 locked controls are inert and show a lock and an
-hour estimate.
+The width fraction is on target at 0.69 in every case and the picture still
+fails. That is the second time a width metric has passed while the photograph
+was wrong, and it is the argument for 2E.

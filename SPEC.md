@@ -239,7 +239,8 @@ This is a **sales-facing quantities summary**, not an estimator's worksheet. It
 exists so a customer can see roughly what their project needs and so the
 captured lead arrives qualified. Keep it readable and compact; do not let it
 grow into an engineering tool or compete visually with the style and colorway
-controls.
+controls. On desktop it renders as a bar along the bottom of the viewport
+rather than as a column (§13), which keeps the width of the frame for the wall.
 
 `computeTakeoff(derived, pricing)` returns lines of `label`, `qty`, `unit`,
 `unitPrice`, `total`.
@@ -279,6 +280,12 @@ in the UI.
 render through `LockedControl`: reduced opacity, lock icon, `cursor:
 not-allowed`, and the hour estimate visible on hover or alongside. A button that
 does not respond reads as a bug, not as a roadmap.
+
+The registry renders behind a collapsed header carrying the number of planned
+features and their total hours, both derived. One click opens it. The rule
+above is about dead controls looking actionable, and a closed disclosure is
+neither dead nor pretending. The header is also the stronger statement: it is
+the budget of the next phase, in two numbers, above everything else.
 
 **Product family** (top tabs)
 
@@ -373,27 +380,42 @@ their wall, shares the link, and that link is the lead.
 
 ## 13. UI
 
-**Desktop layout is full bleed.** The canvas fills the viewport. The control
-panel (~320px) and the takeoff panel (~320px) float above it as cards, one at
-each edge. They carry the same width and the same margin, so the visible area
-between them stays horizontally centred and the camera fit stays a plain fit
-with no projection offset. If the panels ever go asymmetric, that is the point
-at which `camera.setViewOffset` becomes necessary; until then it must not
-appear.
+**Desktop layout is full bleed.** The canvas fills the viewport. Three
+elements float above it.
+
+The **control card** sits at the top left, ~320px wide. It holds the primary
+interaction of §1 and it is open by default. It carries a collapse control
+that slides it out to a narrow rail at the screen edge.
+
+The **takeoff bar** runs along the bottom, full width, around 120px tall: a
+horizontal row of figures with the estimated total emphasised at one end. A
+sales summary reads at least as well across as it does down (§9), and the
+bottom edge is the cheapest space in the frame, because it is foreground
+ground. The engineered wall notice appears inside this bar and must stay
+prominent.
+
+The **roadmap pill** sits at the top right, collapsed by default, showing a
+count of planned features and their total hours. Both numbers are derived
+from `features.ts` plus the locked SKUs at render time. Neither is ever
+typed as a constant. Expanding opens a scrolling card over the canvas.
 
 Panels are opaque against the scene, not translucent. Text over a rendered
 image has to be readable before it is pretty, and `backdrop-filter` over a
 WebGL canvas costs a repaint for a decorative gain this section already rules
-out. Each panel is its own scroll container bounded by the viewport height.
-The page itself never scrolls.
+out. Each is its own scroll container bounded by the viewport. The page never
+scrolls.
 
-The scene bleeds under the panels and the terrain runs off every edge of the
-viewport. **The wall does not.** The camera fits the wall's bounding box
-inside the *safe area*, which is the viewport minus the panels and their
-margins, not inside the full canvas. The safe area is measured at runtime, not
-computed from constants, and a change to it refits the camera exactly once, on
-the same path a dimension change already takes. Nothing about the fit runs per
-frame.
+The scene bleeds under everything and the terrain runs off all four edges of
+the viewport. **The wall does not.** The camera fits the wall's bounding box
+inside the *safe area*: the viewport minus the control card, minus the takeoff
+bar, minus margins. The safe area is measured at runtime, not computed from
+constants.
+
+**A persistent layout change refits the camera; a transient overlay does
+not.** Collapsing or expanding the control card changes the safe rect and
+reframes, exactly once, on the path a dimension change already takes.
+Expanding the roadmap does not: a camera that jumps every time a disclosure
+opens is worse than a moment of overlap. Nothing about the fit runs per frame.
 
 Full bleed is desktop only. Mobile stays stacked, canvas first, fixed height:
 an overlay panel on a 390px screen is the whole screen.
@@ -430,12 +452,11 @@ photographs a finished wall. A high camera shows the top of the retained fill,
 which is the one part of the job nobody wants to look at. The camera targets the
 wall's bounding box, not the terrain's.
 
-Fit the frustum on both axes and take the constraining one. At 1440 by 900 the two panels and their
-margins leave a safe area around 720 by 850, which is still portrait. Full
-bleed makes the picture continuous; it does not make it landscape. A width-only
-fit passes at 0.69 while the wall still sits as a thin band in a large empty
-field. Width alone was the rule here originally, and it passed while the picture
-failed. A metric that can do that is the wrong metric.
+Fit the frustum on both axes and take the constraining one. At 1440 by 900 the control card and the takeoff bar leave a safe area around
+1050 by 700, which is landscape. It was portrait until block 2E, and a
+width-only fit passed at 0.69 while the wall sat as a thin band in a large
+empty field. Twice. A metric that can do that is the wrong metric: fit both
+axes and take the constraining one.
 
 **No fog.** It was tried to hide the far edge of the ground and it washed the
 whole image, for the same reason ACES was dropped: flat matte concrete has
@@ -449,6 +470,15 @@ turf, because the top of the fill must never be the lightest thing in the
 picture. If the grade change is only legible from the wall itself, the
 separation is not yet enough.
 
+This is measurable and it must be measured. Sample the mean relative
+luminance of three named regions of the rendered frame: the wall face, the
+turf in front of it, and the top of the retained fill. The wall face must
+come out at least 1.4 times the turf, and the top of the fill no more than
+0.8 times the turf. Report the three numbers with the sample boxes named. If
+the boxes cannot be placed reliably, say so and report the three material
+base colours instead. Do not move the boxes until the numbers pass: a metric
+that cannot fail is not a metric.
+
 The wall face must be the lightest, highest-contrast object in frame. Keep the
 turf muted enough that it does not compete: it is background, and it occupies
 more pixels than the product does.
@@ -459,7 +489,9 @@ that fights user input. If that happens, do not spend time tuning it: drop
 `Bounds` and compute the camera distance directly from the wall's bounding box,
 applied only when dimensions change and not on every render.
 
-`VersionBadge`, discreet, in a corner: `v0.1 · built in one evening`.
+`VersionBadge`, discreet, in a corner: `v0.1`. The hours actually invested
+belong in the README (§15), stated with their context. On the product a time
+stamp reads as an apology offered before the visitor has formed an opinion.
 
 ## 14. Presets
 

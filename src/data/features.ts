@@ -7,6 +7,8 @@
 // Wall styles are deliberately absent. They live in catalog.ts, because a style
 // is catalog data and not a capability of the tool.
 
+import { WALL_CATALOG, isLockedStyle } from './catalog'
+
 export type FeatureGroup =
   | 'family'
   | 'geometry'
@@ -59,6 +61,24 @@ export const FEATURES: Feature[] = [
   { id: 'layout-sheet', label: 'Printable top-down layout sheet', group: 'technical', locked: true, estimateHours: 3 },
   { id: 'export-dwg', label: 'Export to DWG', group: 'technical', locked: true, estimateHours: 4 },
 ]
+
+/**
+ * The roadmap header's two numbers (SPEC §10). Derived here, at render time,
+ * from the registry plus the locked styles in the catalog. Neither number may
+ * ever be typed as a literal: the moment it is, the roadmap starts lying the
+ * first time a feature is unlocked.
+ */
+export function roadmapTotals(): { count: number; hours: number } {
+  const lockedFeatures = FEATURES.filter((feature) => feature.locked)
+  const lockedStyles = WALL_CATALOG.filter(isLockedStyle)
+
+  return {
+    count: lockedFeatures.length + lockedStyles.length,
+    hours:
+      lockedFeatures.reduce((sum, f) => sum + f.estimateHours, 0) +
+      lockedStyles.reduce((sum, s) => sum + s.estimateHours, 0),
+  }
+}
 
 export function featuresIn(group: FeatureGroup): Feature[] {
   return FEATURES.filter((feature) => feature.group === group)

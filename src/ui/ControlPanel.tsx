@@ -10,6 +10,7 @@ import {
   PRESETS,
   useConfigurator,
 } from '../store/useConfigurator'
+import { useViewport } from '../store/useViewport'
 import { ProductFamilyTabs } from './ProductFamilyTabs'
 import { StyleGrid } from './StyleGrid'
 
@@ -80,15 +81,38 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
   const setCourses = useConfigurator((s) => s.setCourses)
   const setCaps = useConfigurator((s) => s.setCaps)
   const applyPreset = useConfigurator((s) => s.applyPreset)
+  const collapse = useViewport((s) => s.toggleControlCollapsed)
 
   const runFt = inToFt(config.runLengthIn)
 
   return (
     <div className="flex min-h-full flex-col">
       <div className="flex flex-col gap-3 p-3">
-        <h1 className="text-sm font-semibold text-stone-900">
-          Retaining Wall Configurator
-        </h1>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-sm font-semibold text-stone-900">
+            Retaining Wall Configurator
+          </h1>
+          <button
+            type="button"
+            onClick={collapse}
+            aria-expanded="true"
+            title="Collapse the configurator"
+            className="hidden shrink-0 rounded border border-stone-200 p-1 text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700 lg:block"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+        </div>
 
         <ProductFamilyTabs />
 

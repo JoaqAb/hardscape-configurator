@@ -4,29 +4,32 @@ import { deriveWall } from './model/wall'
 import { Scene } from './scene/Scene'
 import { useConfigurator } from './store/useConfigurator'
 import { syncUrl } from './store/urlState'
+import { useViewport } from './store/useViewport'
 import { ControlPanel } from './ui/ControlPanel'
+import { ControlRail } from './ui/ControlRail'
+import { RoadmapPill } from './ui/RoadmapPill'
 import { SafeAreaProbe } from './ui/SafeAreaProbe'
+import { TakeoffBar } from './ui/TakeoffBar'
 import { TakeoffPanel } from './ui/TakeoffPanel'
 import { VersionBadge } from './ui/VersionBadge'
 
 /**
- * Full bleed at desktop (SPEC §13): the canvas is the viewport and the two
- * panels float over it as opaque cards, one at each edge.
+ * Full bleed at desktop (SPEC §13): the canvas is the viewport and three
+ * elements float over it — the control card top left, the roadmap pill top
+ * right, the takeoff bar along the bottom.
  *
- * The panel layer covers the whole viewport, so it is `pointer-events-none` and
- * the cards themselves switch it back on. Without that, an invisible sheet would
- * swallow every orbit drag.
+ * The overlay covers the whole viewport, so it is `pointer-events-none` and
+ * each floating element switches it back on. Without that, an invisible sheet
+ * would swallow every orbit drag.
  *
- * Below `lg` this collapses back to the stacked layout: an overlay panel on a
- * 390px screen is the whole screen.
+ * Below `lg` this renders exactly what block 2D rendered: stacked, canvas
+ * first. An overlay panel on a 390px screen is the whole screen.
  */
-const PANEL =
-  'min-h-0 overflow-y-auto bg-white lg:pointer-events-auto lg:w-80 lg:max-h-full lg:self-start lg:rounded-lg lg:border lg:border-stone-200 lg:shadow-xl'
-
 export default function App() {
   const config = useConfigurator((s) => s.config)
+  const collapsed = useViewport((s) => s.controlCollapsed)
 
-  // The single derivation. The scene, the panel and the takeoff read the same
+  // The single derivation. The scene, the card and the takeoff read the same
   // object, which is what keeps what is drawn and what is quoted from ever
   // disagreeing.
   const derived = useMemo(() => deriveWall(config), [config])
@@ -46,21 +49,40 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:pointer-events-none lg:fixed lg:inset-0 lg:z-10 lg:flex-row lg:items-stretch lg:p-6">
-        <aside className={PANEL}>
+      <div className="flex min-h-0 flex-1 flex-col lg:hidden">
+        <aside className="min-h-0 overflow-y-auto bg-white">
           <ControlPanel derived={derived} />
         </aside>
-
-        {/* The gap between the cards: measured, not assumed, and the only place
-            the version badge can sit without covering either panel. */}
-        <div className="relative hidden lg:mx-6 lg:flex lg:flex-1 lg:items-end lg:justify-end">
-          <SafeAreaProbe />
-          <VersionBadge />
-        </div>
-
-        <aside className={`${PANEL} border-t border-stone-200 lg:border-t`}>
+        <aside className="min-h-0 overflow-y-auto border-t border-stone-200 bg-white">
           <TakeoffPanel derived={derived} />
         </aside>
+      </div>
+
+      <div className="pointer-events-none fixed inset-0 z-10 hidden flex-col p-6 lg:flex">
+        <div className="flex min-h-0 flex-1 gap-6">
+          {collapsed ? (
+            <ControlRail />
+          ) : (
+            <aside className="pointer-events-auto max-h-full w-80 shrink-0 self-start overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-xl">
+              <ControlPanel derived={derived} />
+            </aside>
+          )}
+
+          {/* The safe area: measured by the probe that occupies it. The roadmap
+              card floats over this region but is not part of it, because it is
+              a transient overlay and must not move the camera. */}
+          <div className="relative flex flex-1 items-end justify-end">
+            <SafeAreaProbe />
+            <VersionBadge />
+            <div className="absolute right-0 top-0 flex max-h-full flex-col items-end">
+              <RoadmapPill />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 shrink-0">
+          <TakeoffBar derived={derived} />
+        </div>
       </div>
     </div>
   )

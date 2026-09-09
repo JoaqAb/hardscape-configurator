@@ -22,10 +22,19 @@ export function SafeAreaProbe() {
     if (!element) return
 
     let frame = 0
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect
+    const report = () => {
+      const box = element.getBoundingClientRect()
+      setSafeRect({
+        left: box.left,
+        top: box.top,
+        width: box.width,
+        height: box.height,
+      })
+    }
+
+    const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => setSafeRect({ width, height }))
+      frame = requestAnimationFrame(report)
     })
 
     observer.observe(element)
