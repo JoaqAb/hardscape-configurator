@@ -5,6 +5,7 @@
  */
 
 export const IN_PER_FT = 12
+export const IN3_PER_FT3 = IN_PER_FT ** 3
 
 export function inToFt(inches: number): number {
   return inches / IN_PER_FT
@@ -36,4 +37,31 @@ export function formatFeetInches(totalInches: number): string {
   }
 
   return `${sign}${feet}' ${inches}"`
+}
+
+export function cubicInchesToCubicFeet(cubicInches: number): number {
+  return cubicInches / IN3_PER_FT3
+}
+
+/**
+ * Quantities read as whole numbers where they are whole and to one decimal
+ * where they are not, so 84 units does not render as 84.0 tons of precision it
+ * does not have.
+ */
+export function formatQuantity(value: number): string {
+  const rounded = Math.round(value * 10) / 10
+  return Number.isInteger(rounded)
+    ? rounded.toLocaleString('en-US')
+    : rounded.toLocaleString('en-US', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })
+}
+
+export function formatUsd(value: number): string {
+  return value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  })
 }

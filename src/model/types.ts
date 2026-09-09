@@ -87,6 +87,19 @@ export type BlockPlacement = {
   indexInCourse: number
 }
 
+/**
+ * One row of the quantities summary (SPEC §9). `qty` always carries the number
+ * the row is about and `unit` names it; `unitPrice` and `total` are null on the
+ * rows that are not money, which is why they are nullable rather than zero.
+ */
+export type TakeoffLine = {
+  label: string
+  qty: number
+  unit: string
+  unitPrice: number | null
+  total: number | null
+}
+
 export type DerivedWall = {
   sku: WallSku
   /** Already resolved, with the fallback applied. The scene just reads it. */

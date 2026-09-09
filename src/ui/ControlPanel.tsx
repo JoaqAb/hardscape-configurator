@@ -99,18 +99,12 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
         </label>
       </div>
 
+      {/* Counts live in the takeoff panel; repeating them here would only give
+          the same number two homes. */}
       <dl className="grid grid-cols-2 gap-y-1.5 border-t border-stone-200 pt-4 text-xs">
         <dt className="text-stone-500">Finished height</dt>
         <dd className="text-right font-medium tabular-nums text-stone-800">
           {formatFeetInches(derived.totalHeightIn)}
-        </dd>
-        <dt className="text-stone-500">Units</dt>
-        <dd className="text-right font-medium tabular-nums text-stone-800">
-          {derived.blockCount}
-        </dd>
-        <dt className="text-stone-500">Caps</dt>
-        <dd className="text-right font-medium tabular-nums text-stone-800">
-          {derived.capCount}
         </dd>
       </dl>
     </div>

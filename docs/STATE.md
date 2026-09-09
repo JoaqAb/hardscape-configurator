@@ -91,6 +91,14 @@ or migrate tables.**
   (SPEC §1, §9).
 - The style grid shows active SKUs only. The three locked styles need
   `LockedControl`, which arrives with the block 2 feature registry.
+- Unit prices are computed into `TakeoffLine.unitPrice` but not rendered: at
+  320px the panel shows label, quantity and line total only (SPEC §9 asks for
+  compact). The field is there when a wider layout wants it.
+- The cap line is omitted when caps are off rather than shown as a zero row.
+- Cap price is `sku.pricePerUnit * pricing.capPriceFactor`, so it scales with
+  the SKU instead of being one flat number for all three.
+- Block and cap counts were removed from the control panel: they live in the
+  takeoff now, and one number should not have two homes.
 - The scale figure is a flat cutout, so it foreshortens when the camera is
   high. Correct for what it is; noted in case it reads as a defect.
 
@@ -116,3 +124,17 @@ Granite returns when a style that offers it is selected again.
 
 Instance ceiling is 1024; the largest configuration the controls allow, 80' by
 10 courses, derives 275 units.
+
+## Block 2A verification
+
+Takeoff and scene cannot disagree because they read one field. `wall.ts` sets
+`blockCount: blocks.length` from the array it has just built; `Wall.tsx` draws
+that array via `courseBlocks` with `range={derived.blockCount}`; `takeoff.ts`
+bills `qty: derived.blockCount`. There is no second count anywhere.
+
+40' x 6, Tumbled Ashlar 36x18x8: 160 sq ft of face, 84 units, 14 caps, 2.6 tons
+of gravel, 4 tubes, $2,496 estimated, 39,077.5 lb. No engineered notice at 48"
+of block. At 7 courses the notice appears and units go to 98.
+
+Caps off: the cap line disappears and adhesive drops from 4 tubes to 2, because
+only the top course joint is left to bed.
