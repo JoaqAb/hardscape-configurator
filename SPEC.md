@@ -191,6 +191,10 @@ names following the same rule.
 Caps are a separate SKU: `depthIn = blockDepth + 2`, `heightIn = 3`, with a 1"
 front overhang.
 
+Cap colour derives from the block's colorway by a single value factor in one
+place, so a cap reads as a different piece with a different finish without
+introducing a second colour into the palette.
+
 **Weight is never hardcoded.** It is derived from volume at 145 lb/ft³. Small
 but direct evidence that the model computes rather than stores constants.
 
@@ -207,9 +211,14 @@ but direct evidence that the model computes rather than stores constants.
 4. **Setback**: each course retreats `setbackIn` in Z relative to the one below,
    cumulatively. This is real construction practice and it is what makes the
    wall read as credible rather than as a grid.
-5. **Variation**: per-block Y rotation of ±0.6° and offset of ±0.15", from a
-   deterministic PRNG seeded with the block index. Determinism is mandatory: the
-   same URL must produce the same wall.
+5. **Variation**: per-block Y rotation of ±0.6°, offset of ±0.15", and ±3% of
+   luminance on the block's colorway, all from a deterministic PRNG seeded with
+   the block index. Determinism is mandatory: the same URL must produce the same
+   wall. The mean of the luminance variation is the colorway itself, so the
+   rendered colour still matches the swatch that was clicked (§13). **Blocks at a
+   90° corner are laid true**: they take the colour variation but not the rotation
+   or the offset, because ±0.15" on each of two runs is more than the clearance
+   the corner has, and a mason lays a corner true for the same reason.
 6. **Caps**: a final course of cap pieces, aligned to the front face of the top
    block course, overhang forward.
 7. **90° return** (`If time remains`): the wall is two runs, `runA` and optional
@@ -446,6 +455,14 @@ an overlay panel on a 390px screen is the whole screen.
 Restrained aesthetic, appropriate for a construction materials manufacturer. No
 decorative gradients, no entrance animations. Neutral sans typeface, cool
 neutral palette, one accent color.
+
+A two colour vertical gradient stands behind the scene as sky. **No decorative
+gradients** above is about the UI chrome. A sky is not decoration, it is what is
+above the horizon, and without one the ground and the sky are a single field of
+the same value and the image has no horizon at all. It fetches nothing and costs
+nothing per frame, and it is the only gradient this file allows. Its brightest
+stop, at the horizon, must not exceed the measured luminance of the wall face,
+because the wall face stays the lightest, highest contrast object in frame.
 
 Scene lighting must be **fully local**. Do not use `<Environment preset="..." />`
 or any drei helper that fetches an HDRI or any other asset from a CDN at
