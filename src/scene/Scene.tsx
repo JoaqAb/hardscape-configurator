@@ -2,7 +2,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useLayoutEffect, useMemo } from 'react'
 import { CanvasTexture, MathUtils, SRGBColorSpace, Vector3 } from 'three'
-import type { PerspectiveCamera } from 'three'
+import type { PerspectiveCamera, Scene as ThreeScene, Texture } from 'three'
 
 import type { DerivedWall } from '../model/types'
 import { inToFt } from '../model/units'
@@ -282,6 +282,12 @@ function Rig({ derived }: { derived: DerivedWall }) {
   )
 }
 
+/** Module level for the same reason placeCamera is: it is a write to a three
+ *  object, not a closure over hook state, and the linter cannot tell them apart. */
+function applyBackground(scene: ThreeScene, texture: Texture | null) {
+  scene.background = texture
+}
+
 function Sky() {
   const scene = useThree((s) => s.scene)
 
@@ -306,9 +312,9 @@ function Sky() {
 
   useLayoutEffect(() => {
     if (!texture) return
-    scene.background = texture
+    applyBackground(scene, texture)
     return () => {
-      scene.background = null
+      applyBackground(scene, null)
       texture.dispose()
     }
   }, [scene, texture])
