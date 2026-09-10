@@ -1,7 +1,7 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { useLayoutEffect } from 'react'
-import { MathUtils, Vector3 } from 'three'
+import { useLayoutEffect, useMemo } from 'react'
+import { CanvasTexture, MathUtils, SRGBColorSpace, Vector3 } from 'three'
 import type { PerspectiveCamera } from 'three'
 
 import type { DerivedWall } from '../model/types'
@@ -24,7 +24,23 @@ const WALL_WIDTH_FRACTION = 0.68
 const WALL_HEIGHT_FRACTION = 0.5
 const MIN_CAMERA_DISTANCE_FT = 14
 
-const BACKGROUND = '#dcdbd7'
+/**
+ * Sky (SPEC §13). Two stops, cool neutral, generated once into a CanvasTexture
+ * and handed to scene.background: no geometry, no shader, no network, nothing
+ * per frame.
+ *
+ * The horizon stop is held under the measured luminance of the wall face,
+ * because §13 keeps the wall face the lightest thing in frame. That ceiling is
+ * what makes this sky as dark as it is.
+ */
+const SKY_HORIZON = '#5c5f64'
+const SKY_ZENITH = '#3a3e46'
+/**
+ * Where the horizon stop lands down the frame. The background is drawn in screen
+ * space, so its own bottom edge sits behind the ground: without this the only
+ * band a visitor ever sees is the zenith and the gradient does nothing.
+ */
+const SKY_HORIZON_STOP = 0.15
 
 function viewDirection(): Vector3 {
   const elevation = MathUtils.degToRad(VIEW_ELEVATION_DEG)
@@ -266,12 +282,46 @@ function Rig({ derived }: { derived: DerivedWall }) {
   )
 }
 
+function Sky() {
+  const scene = useThree((s) => s.scene)
+
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+    gradient.addColorStop(0, SKY_ZENITH)
+    gradient.addColorStop(SKY_HORIZON_STOP, SKY_HORIZON)
+    gradient.addColorStop(1, SKY_HORIZON)
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    const map = new CanvasTexture(canvas)
+    map.colorSpace = SRGBColorSpace
+    return map
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!texture) return
+    scene.background = texture
+    return () => {
+      scene.background = null
+      texture.dispose()
+    }
+  }, [scene, texture])
+
+  return null
+}
+
 export function Scene({ derived }: { derived: DerivedWall }) {
   const runFt = inToFt(derived.runLengthIn)
 
   return (
     <Canvas flat shadows dpr={[1, 2]} camera={{ fov: 38, position: [0, 8, 40] }}>
-      <color attach="background" args={[BACKGROUND]} />
+      <Sky />
 
       <Rig derived={derived} />
       <CameraRig derived={derived} />
