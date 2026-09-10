@@ -47,9 +47,15 @@ export function deriveSite(derived: DerivedWall): DerivedSite {
 
   // With the return active the fill is flush with the end of the return, so its
   // depth is the return's built length plus runA's depth rather than the
-  // free-end rule (SPEC §8.8).
+  // free-end rule (SPEC §8.8). The return retreats with the setback like every
+  // other course, so the top course ends one cumulative setback further back
+  // than the bottom one, and the terrace has to reach the top.
   const terraceDepthFt = returning
-    ? inToFt(derived.returnRunLengthIn + derived.sku.depthIn) + frontZ
+    ? inToFt(
+        derived.returnRunLengthIn +
+          derived.sku.depthIn +
+          derived.topSetbackIn,
+      ) + frontZ
     : Math.max(
         TERRACE_DEPTH_MIN_FT,
         TERRACE_DEPTH_HEIGHT_MULTIPLE * finishedHeightFt,
