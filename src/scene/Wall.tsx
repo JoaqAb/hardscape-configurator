@@ -21,11 +21,9 @@ export function Wall({ derived }: { derived: DerivedWall }) {
         receiveShadow
       >
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial
-          color={derived.colorway.hex}
-          roughness={0.88}
-          metalness={0}
-        />
+        {/* White, because the colorway now arrives per instance: leaving it on
+            the material as well multiplies the colour by itself. */}
+        <meshStandardMaterial color="#ffffff" roughness={0.88} metalness={0} />
         {derived.courseBlocks.map((placements, course) => (
           <BlockCourse
             key={course}
