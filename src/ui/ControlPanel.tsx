@@ -122,25 +122,38 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
 
         <StyleGrid derived={derived} />
 
-        <section>
-          <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
-            Presets
-          </h2>
-          <div className="flex flex-col gap-1">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => applyPreset(preset.id)}
-              className="rounded border border-stone-200 px-2.5 py-1 text-left text-xs text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
-            >
-              {preset.label}
-            </button>
-          ))}
-          </div>
-        </section>
-
         <div className="space-y-3 border-t border-stone-200 pt-3">
+        {/* An independent axis, like style and colorway: the presets do not
+            touch it (SPEC §14). */}
+        <label className="flex items-center justify-between gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            90° return
+          </span>
+          <input
+            type="checkbox"
+            checked={config.returnEnabled}
+            onChange={(e) => setReturnEnabled(e.target.checked)}
+            className="h-4 w-4 accent-accent"
+          />
+        </label>
+
+        {config.returnEnabled && (
+          <Field
+            label="Return length"
+            value={formatFeetInches(derived.returnRunLengthIn)}
+          >
+            <input
+              type="range"
+              min={MIN_RETURN_FT}
+              max={MAX_RETURN_FT}
+              step={1}
+              value={config.returnRunFt}
+              onChange={(e) => setReturnRunFt(Number(e.target.value))}
+              className="mt-1.5 w-full accent-accent"
+            />
+          </Field>
+        )}
+
         <Field label="Wall length" value={formatFeetInches(config.runLengthIn)}>
           <input
             type="range"
@@ -180,38 +193,25 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
           />
         </label>
 
-        {/* An independent axis, like style and colorway: the presets do not
-            touch it (SPEC §14). */}
-        <label className="flex items-center justify-between gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-            90° return
-          </span>
-          <input
-            type="checkbox"
-            checked={config.returnEnabled}
-            onChange={(e) => setReturnEnabled(e.target.checked)}
-            className="h-4 w-4 accent-accent"
-          />
-        </label>
-
-        {config.returnEnabled && (
-          <Field
-            label="Return length"
-            value={formatFeetInches(derived.returnRunLengthIn)}
-          >
-            <input
-              type="range"
-              min={MIN_RETURN_FT}
-              max={MAX_RETURN_FT}
-              step={1}
-              value={config.returnRunFt}
-              onChange={(e) => setReturnRunFt(Number(e.target.value))}
-              className="mt-1.5 w-full accent-accent"
-            />
-          </Field>
-        )}
       </div>
 
+        <section>
+          <h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Presets
+          </h2>
+          <div className="flex flex-col gap-1">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => applyPreset(preset.id)}
+              className="rounded border border-stone-200 px-2.5 py-1 text-left text-xs text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50"
+            >
+              {preset.label}
+            </button>
+          ))}
+          </div>
+        </section>
       </div>
 
       {/* Pinned to the foot of the column, outside the scroll. §12 calls this
