@@ -9,9 +9,11 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 3A closed.** Commits `b86073c`, `3b93707`. Live. The spec is complete:
-every acceptance criterion in `docs/EXECUTION.md` has passed. What remains is
-`If time remains`.
+**Block 4 closed.** Commits `be4e7bf` through `68fee5c`. Live. The spec is
+complete, every acceptance criterion in `docs/EXECUTION.md` has passed, and the
+first item of `If time remains`, the 90 degree return, is built and unlocked.
+What remains of that list is Export CSV, Metric toggle and Seat wall, none of
+them started.
 
 Live and current: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
@@ -39,11 +41,23 @@ Live and current: `https://hardscape-configurator.hardscape-configurator.workers
 - Block 3A (roadmap integrity), `b86073c`, `3b93707`. The card now accounts for
   all 22 planned items and its column sums to the pill's 85h. Three registry
   labels corrected.
-- The 90 degree return is a locked registry row and lives in `If time remains`.
-- **Next**: block 4, in `If time remains` order but reordered by risk. 4A is the
-  90 degree return, hard timeboxed, with the revert criterion in EXECUTION. 4B
-  is a visual pass over whatever geometry 4A leaves behind. Revertible risk
-  first, then the work that cannot fail badly.
+- Block 4A (the 90 degree return), `be4e7bf`, `bf41581`, merged as `1ea05ca`.
+  Landed inside the 90 minute box. `runB` optional and off by default, corner
+  clean, registry row unlocked, four SPEC edits.
+- Block 4B (visual pass), `a2e605b`, `4205c61`, `12a5d36`, `6e09768`, `ccd38db`,
+  `0c35983`, `cfbe1fa`, `c154880`, `db29997`. Camera fitted to every placement,
+  a sky, per block value variation, caps distinguished from the body, the cast
+  shadow verified, the fill corrected to reach the top of the return.
+- Block 4C (sky ceiling and shadow camera), `6a1ee0f`, `28429cc`, `93ceeef`.
+  §13's sky constraint was wrong and was replaced with a floor. Shadow camera
+  fitted to the derived bounds.
+- Block 4D (control card order), `7fdf6ca`. The return toggle is above the fold.
+- README time invested closed, `68fee5c`. Six and a half hours in one day, one
+  afternoon and one evening, with the note that the commit timestamps span
+  longer because of breaks.
+- **Next**: nothing is queued. The remaining `If time remains` rows are cheap and
+  independent, and each one that gets built lowers the roadmap's two numbers,
+  which is the honest trade and not a reason to avoid it.
 
 ## Where the scene landed
 
@@ -54,7 +68,9 @@ it by sloping back to grade. The ground plane still runs to the horizon; the
 mass the wall holds is finite, fully in frame, and reads as a terrace the wall
 created.
 
-The scene is closed. Do not reopen it in block 3.
+The scene is closed. Blocks 4B and 4C reopened it once, on purpose and under
+§13's measured rules: a sky was added and the shadow camera was fitted to the
+derived bounds. Nothing else in it is to be reopened.
 
 ## Environment
 
@@ -199,6 +215,57 @@ the app.
   at the origin the blur works, but then the ground plane at y = 0 fills the
   depth pass. With a ground plane at y = 0 there is no position that works.
 
+**The 90 degree return and the visual pass**
+
+- The corner is the intersection line of the two retreating face planes, not a
+  fixed point. Cumulative setback moves both faces back, so the vertex walks the
+  45° bisector one setback per axis per course. Every course clips `runA` at that
+  line and starts `runB` from it, offset by `runA`'s depth. Nothing is generated
+  past the vertex, so the overlap never exists and the takeoff has nothing to
+  subtract. Measured with the Separating Axis Theorem on every pair of oriented
+  boxes in a course: 0.0000" of penetration between the runs in five
+  configurations.
+- **Corner blocks are laid true, with no jitter.** The first attempt penetrated
+  0.2992" because ±0.15" of offset on each of two runs is more than the corner's
+  clearance. This is now SPEC §8.5 and it is also how a mason lays a corner.
+- The camera fitted its bounding box from `runA` alone, because there was only
+  ever one run. It now fits every derived placement of both runs plus caps. This
+  closed a real divergence from §13, which always said the wall's own bounding
+  box.
+- `Instances` carried the colorway on the material while each `Instance` also
+  carried it, so three multiplied one by the other and the wall rendered at the
+  square of its colour: wall face 0.0355, wall over turf 0.44, a §13 failure. The
+  material is white and the colour arrives per instance. Mean across instances is
+  the colorway exactly, so the render still matches the clicked swatch.
+- The sky is a `CanvasTexture` built once and assigned to `scene.background`, so
+  it fetches nothing and costs nothing per frame. It draws in screen space, so
+  its lower half sits behind the ground and only the top band is ever visible;
+  the horizon stop is at 15 percent of frame height for that reason.
+- **§13's original sky constraint was wrong and is replaced.** It capped the
+  horizon stop at the wall face's luminance, which produced a sky two percent
+  lighter than the turf: a dark ceiling, not a horizon. The rule that the wall
+  face is the lightest object in frame is about the materials in the scene. The
+  sky is not a material, and in every photograph of a finished wall it is
+  brighter than the wall. §13 now sets a floor of 1.6 times the turf.
+- Cap colour derives from the block's colorway by `CAP_VALUE_FACTOR` 0.94 in
+  `catalog.ts`, with roughness 0.88 to 0.78. One factor, one home, no second
+  colour in the palette.
+- The cast shadow exists and it falls on the wall, not on the ground: the cap
+  course over the top of the face and the setback self-shadowing course to
+  course. Ground ratio is 1.000 and cannot be anything else, because §13 puts the
+  key in front and a key behind the wall would unlight the product.
+- `RoadmapList` rendered every feature in a group as a locked row without
+  checking the flag, so the unlocked return would still have shown a padlock. It
+  filters on `locked` now. The bug was latent on main since 2B and only the
+  unlock exposed it.
+- Terrace depth carries `topSetbackIn`, because the return retreats with the
+  setback like every other course and the fill stopped five inches short of its
+  top course at six courses. Depth is now exactly the return's built length.
+- The control card's order puts the return toggle and wall length above the fold
+  and the three presets below it. A preset is a shortcut; the controls it is a
+  shortcut for now come first. Content height is unchanged at 937px, so this was
+  a reorder and nothing else.
+
 **Review method**
 
 - Screenshots are a review artifact and the first screenshot is a deliverable.
@@ -217,6 +284,11 @@ Accepted, no action:
 - The `workers.dev` hostname doubles the project name. Cosmetic.
 - `docs/reports/2C.md` still describes the deleted pixel probe. Closed record,
   left alone.
+- The three presets sit below the control card's fold after 4D. They carry the
+  trade's language and they are worth showing by hand in a demo.
+- The scale figure is a flat cutout and the terrace's end slopes read as hard
+  wedges. Both are the cost of §2's no-texture rule, not defects: a turf texture
+  and ambient occlusion are what would fix them, and both are out of scope.
 
 ## Verified reference numbers
 
@@ -247,8 +319,17 @@ with `range={derived.blockCount}`, and `takeoff.ts` bills `qty:
 derived.blockCount`. There is no second count anywhere.
 
 A copied link reproduces the wall including a non-first colorway and caps off.
-Four sets of junk params fell back to defaults without throwing. 22 of 22 locked
+Four sets of junk params fell back to defaults without throwing. 21 of 21 locked
 controls are inert and show a lock and an hour estimate.
+
+Return on, `runA` 40' × 6 courses with a 12' return, Tumbled Ashlar 36x18x8:
+52 ft of total run, 111 units, 18 caps, 208 sq ft of face, 3.37 tons of gravel,
+6 tubes, $3,294 estimated, 51,547.5 lb. Checked by hand: 111 is 84 plus 27, which
+is 4 blocks on odd courses and 5 on even by the same parity rule as a straight
+wall; 111 at 3 ft³ plus 18 caps at 1.25 ft³ at 145 lb/ft³ is 51,547.5 lb. Vertex
+at course 1 is x 480", z 0"; at course 6 it is x 475", z -5", which is the 45°
+bisector. With the return off, all four presets return their pre-4A numbers
+exactly.
 
 Lead capture verified end to end. Row `c6913e1e-a290-422e-85bb-2c1b5876ac65`,
 created 2026-09-09 21:28:59 UTC: `config` holds the five `WallConfig` fields
@@ -258,10 +339,11 @@ click. Aborting the POST surfaced a readable sentence with the typed values
 intact. Over-long name and phone are rejected client-side and never reach
 Postgres.
 
-Roadmap pill reads `Roadmap · 22 planned · 85h`, both derived, and the expanded
-card accounts for all of it: 14 listed rows at 51h, plus subtotals of 5 product
-families at 27h and 3 wall styles at 7h, which live in the tabs and the style
-grid. 14 + 5 + 3 = 22 and 51 + 27 + 7 = 85.
+Roadmap pill reads `Roadmap · 21 planned · 83h` after the unlock, both derived
+with no hand edit, and the expanded card accounts for all of it: 13 listed rows
+at 49h, plus subtotals of 5 product families at 27h and 3 wall styles at 7h,
+which live in the tabs and the style grid. 13 + 5 + 3 = 21 and 49 + 27 + 7 = 83.
+The unlocked return is not listed and carries no padlock.
 
 ## Framing measurements
 
@@ -291,6 +373,16 @@ Luminance at 1440x900, Backyard terrace, Gray Granite: wall face 0.1164, turf in
 front 0.0801, terrace top 0.0608. Wall over turf 1.453 against a target of 1.4,
 fill over turf 0.759 against a target of 0.8.
 
+After block 4C, same boxes, unmoved since 2F: wall face 0.1162, turf 0.0801,
+terrace top 0.0609. Wall over turf 1.451, fill over turf 0.760. Sky at the
+horizon band 0.4517, which is 5.64 times the turf against a floor of 1.6. Stops
+`#b6bbc0` at the horizon and `#8f969d` at the zenith. Shadow band on the wall,
+0.0242 with shadows against 0.0351 without, ratio 0.691.
+
+Framing at 1440x900 after the camera fit was corrected: return off 710×165, 0.677
+of safe width; return on 712×191, 0.679. Width binds in both. Before the fix the
+return-on case measured 0.698 because the fit ignored `runB`.
+
 Derived site per preset, from `model/site.ts`:
 
 | Preset | Fill height | Terrace depth | Slope run |
@@ -301,3 +393,9 @@ Derived site per preset, from `model/site.ts`:
 | Default 24'×4 | 2.67 ft | 10.00 ft (floor) | 4.00 ft |
 
 The 10 ft floor binds for three of the four presets.
+
+With the return on, terrace depth is the return's built length instead: 12.000 ft
+for a 12 ft return, 8.000 for 8, 20.000 for 20, and the fill's back edge lands
+within 0.25" of the return's top course. The boundary along `runB` is a vertical
+face rather than a ruled end slope, because a return is where the retained earth
+ends and the grade daylights.

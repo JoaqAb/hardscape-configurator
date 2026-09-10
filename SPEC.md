@@ -354,6 +354,18 @@ catalog is already data rather than code.
 Design the registry so that enabling a feature means flipping `locked: false`
 and writing its logic, with no UI changes. One may need to be unlocked live.
 
+**That rule binds the registry, not the product, and this draft was imprecise
+about the difference.** A registry row is not a control: it is a roadmap entry.
+Unlocking one means flipping the flag, writing the logic, and adding whatever
+control the feature itself needs. What must not change is the registry's own
+rendering: `LockedControl`, the collapsed header, and the two derived numbers,
+which have to keep accounting for whatever is still locked without a hand edit.
+The 90 degree return was the first row unlocked and it needed a toggle and a
+length in the control card, which is the feature's own UI and not a defect in
+this design. It also exposed a real one: `RoadmapList` rendered every row in a
+group as locked without checking the flag, so an unlocked row would still have
+carried a padlock.
+
 **Wall styles are not in the registry.** A style is catalog data, not a
 capability of the tool, so the locked SKUs carry their own hour estimates in
 `catalog.ts` and the registry does not repeat them. One number, one home: the
