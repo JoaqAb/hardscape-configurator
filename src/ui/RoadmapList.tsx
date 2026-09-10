@@ -51,17 +51,19 @@ export function RoadmapList() {
             {FEATURE_GROUP_LABELS[group]}
           </h3>
           <div className="flex flex-col gap-0.5">
-            {featuresIn(group).map((feature) => (
-              <LockedControl
-                key={feature.id}
-                estimateHours={feature.estimateHours}
-                className="py-0.5"
-              >
-                <span className="truncate text-[11px] text-stone-600">
-                  {feature.label}
-                </span>
-              </LockedControl>
-            ))}
+            {featuresIn(group)
+              .filter((feature) => feature.locked)
+              .map((feature) => (
+                <LockedControl
+                  key={feature.id}
+                  estimateHours={feature.estimateHours}
+                  className="py-0.5"
+                >
+                  <span className="truncate text-[11px] text-stone-600">
+                    {feature.label}
+                  </span>
+                </LockedControl>
+              ))}
           </div>
         </section>
       ))}

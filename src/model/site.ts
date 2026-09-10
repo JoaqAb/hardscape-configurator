@@ -37,16 +37,23 @@ export function deriveSite(derived: DerivedWall): DerivedSite {
   const runFt = inToFt(derived.runLengthIn)
   const fillHeightFt = inToFt(derived.wallHeightIn)
   const finishedHeightFt = inToFt(derived.totalHeightIn)
+  const returning = derived.returnRunLengthIn > 0
 
-  const terraceDepthFt = Math.max(
-    TERRACE_DEPTH_MIN_FT,
-    TERRACE_DEPTH_HEIGHT_MULTIPLE * finishedHeightFt,
-  )
   const slopeRunFt = SLOPE_RUN_PER_RISE * fillHeightFt
 
   // The front face stands at the back of the wall, behind the top course's
   // setback, which is the plane the wall actually retains.
   const frontZ = -inToFt(derived.sku.depthIn + derived.topSetbackIn)
+
+  // With the return active the fill is flush with the end of the return, so its
+  // depth is the return's built length plus runA's depth rather than the
+  // free-end rule (SPEC §8.8).
+  const terraceDepthFt = returning
+    ? inToFt(derived.returnRunLengthIn + derived.sku.depthIn) + frontZ
+    : Math.max(
+        TERRACE_DEPTH_MIN_FT,
+        TERRACE_DEPTH_HEIGHT_MULTIPLE * finishedHeightFt,
+      )
   const backZ = frontZ - terraceDepthFt
   const toeZ = backZ - slopeRunFt
 
@@ -56,13 +63,20 @@ export function deriveSite(derived: DerivedWall): DerivedSite {
   // Top rectangle over the wall's run, base polygon spread out behind and to
   // both sides by the slope run. The base keeps the wall's run at the front, so
   // the only vertical surface is the one the wall is holding.
+  // Without a return the right side is a ruled end slope like the left. With
+  // one, that side is where the retained earth ends against runB, so it becomes
+  // vertical: the same five faces, different corner coordinates.
+  const rightX = returning ? runFt - inToFt(derived.sku.depthIn + derived.topSetbackIn) : runFt
+  const rightToeX = returning ? rightX : runFt + s
+  const rightToeZ = returning ? toeZ : toeZ
+
   const t0: Point = [0, h, frontZ]
-  const t1: Point = [runFt, h, frontZ]
-  const t2: Point = [runFt, h, backZ]
+  const t1: Point = [rightX, h, frontZ]
+  const t2: Point = [rightX, h, backZ]
   const t3: Point = [0, h, backZ]
   const b0: Point = [0, 0, frontZ]
-  const b1: Point = [runFt, 0, frontZ]
-  const b2: Point = [runFt + s, 0, toeZ]
+  const b1: Point = [rightX, 0, frontZ]
+  const b2: Point = [rightToeX, 0, rightToeZ]
   const b3: Point = [-s, 0, toeZ]
 
   const positions: number[] = []

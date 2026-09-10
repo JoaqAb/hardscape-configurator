@@ -6,6 +6,8 @@ import {
   MAX_COURSES,
   MAX_RUN_FT,
   MIN_COURSES,
+  MAX_RETURN_FT,
+  MIN_RETURN_FT,
   MIN_RUN_FT,
   PRESETS,
   useConfigurator,
@@ -82,6 +84,8 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
   const setCaps = useConfigurator((s) => s.setCaps)
   const applyPreset = useConfigurator((s) => s.applyPreset)
   const collapse = useViewport((s) => s.toggleControlCollapsed)
+  const setReturnEnabled = useConfigurator((s) => s.setReturnEnabled)
+  const setReturnRunFt = useConfigurator((s) => s.setReturnRunFt)
 
   const runFt = inToFt(config.runLengthIn)
 
@@ -175,6 +179,37 @@ export function ControlPanel({ derived }: { derived: DerivedWall }) {
             className="h-4 w-4 accent-accent"
           />
         </label>
+
+        {/* An independent axis, like style and colorway: the presets do not
+            touch it (SPEC §14). */}
+        <label className="flex items-center justify-between gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            90° return
+          </span>
+          <input
+            type="checkbox"
+            checked={config.returnEnabled}
+            onChange={(e) => setReturnEnabled(e.target.checked)}
+            className="h-4 w-4 accent-accent"
+          />
+        </label>
+
+        {config.returnEnabled && (
+          <Field
+            label="Return length"
+            value={formatFeetInches(derived.returnRunLengthIn)}
+          >
+            <input
+              type="range"
+              min={MIN_RETURN_FT}
+              max={MAX_RETURN_FT}
+              step={1}
+              value={config.returnRunFt}
+              onChange={(e) => setReturnRunFt(Number(e.target.value))}
+              className="mt-1.5 w-full accent-accent"
+            />
+          </Field>
+        )}
       </div>
 
       </div>

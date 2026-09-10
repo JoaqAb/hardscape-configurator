@@ -212,10 +212,19 @@ but direct evidence that the model computes rather than stores constants.
    same URL must produce the same wall.
 6. **Caps**: a final course of cap pieces, aligned to the front face of the top
    block course, overhang forward.
-7. **90° return** (block 2): the wall is two runs, `runA` and optional `runB`,
-   joined at a corner. Blocks must not intersect at the corner: run B starts
-   offset by run A's depth. The takeoff sums both runs and subtracts the corner
-   overlap.
+7. **90° return** (`If time remains`): the wall is two runs, `runA` and optional
+   `runB`, joined at a corner. `runB` is off by default and the default wall is
+   a single straight run. The corner is the intersection line of the two
+   retreating face planes, not a fixed point: setback (§8.4) moves each course's
+   face back by the cumulative setback, so on an L the vertex travels along the
+   45° bisector, one cumulative setback in each axis per course. Every course
+   clips `runA` at that line and starts `runB` from it, offset by `runA`'s depth,
+   so the two runs never occupy the same volume. Because the overlap is never
+   generated, the takeoff has nothing to subtract: quantities stay a count of
+   what was derived (§5, §9), `blockCount` is the length of one array covering
+   both runs, and every length driven line reads `totalRunFt`. There is no second
+   derivation and no second count. Both runs share one course count and one
+   setback rule, so finished height is the same on both.
 8. **Terrain**: ground plane at the front and a turfed bank of retained earth
    behind the wall, so the wall reads as retaining something rather than as a
    freestanding wall on a lawn. Simple geometry, no mesh deformation. A
@@ -229,6 +238,14 @@ but direct evidence that the model computes rather than stores constants.
    a plateau the wall happens to stand in front of, and it hides the one thing
    the wall is for. What must never be visible is a cut face, not an edge.
    Footprint and slopes derive from the wall in `model/site.ts`.
+
+   With `runB` active the retained mass keeps the same five faces. Terrace depth
+   is the return's built length plus `runA`'s depth rather than
+   `max(10 ft, 3 × finished height)`, and the boundary along `runB` is vertical
+   instead of a ruled end slope, because a return is where the retained earth
+   ends and the grade daylights. The top of the fill stays flat and level across
+   both runs. An L shaped terrace graded at 1.5:1 through a reentrant inside
+   corner is out of scope and is not attempted.
 9. **Human scale**: a flat 6 ft silhouette beside the wall. The cheapest
    existing detail that makes a 3D demo read as professional.
 
@@ -255,7 +272,7 @@ rather than as a column (§13), which keeps the width of the frame for the wall.
 |---|---|
 | Wall face area | `runLengthFt * wallHeightFt` |
 | Block count per SKU | actual count of rendered instances (same data as the scene) |
-| Cap count | `ceil(runLengthIn / capWidthIn)` |
+| Cap count | count of the derived cap placements the scene draws, both runs |
 | Base gravel | trench of `blockDepth + 12"` wide × 6" deep × run length; to yd³ (`ft³ / 27`), to tons at 1.4 ton/yd³ |
 | Construction adhesive | 1 tube per 20 linear feet of cap joint plus top course, rounded up |
 | Estimated total | sum of `qty * unitPrice`, prices from `pricing.ts` (PLACEHOLDER) |
@@ -530,6 +547,9 @@ Buttons that set the wall's dimensions at once, named in the trade's language:
 - `Garden wall — 20' × 3 courses`
 - `Backyard terrace — 40' × 6 courses`
 - `Driveway edge — 60' × 2 courses`
+
+The 90° return is not part of a preset. Presets set run length and courses; the
+return is an independent axis, like style and colorway.
 
 **Presets set dimensions only.** They must not overwrite the selected style or
 colorway. Material selection is the primary interaction (§1), and a preset that
