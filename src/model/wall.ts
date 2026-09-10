@@ -112,6 +112,42 @@ function resolveSku(skuId: string, catalog: CatalogEntry[]): WallSku {
   )
 }
 
+/** World bounds of a set of placements, turned pieces included. */
+function boundsOf(placements: BlockPlacement[]): DerivedWall['boundsFt'] {
+  const min: [number, number, number] = [Infinity, Infinity, Infinity]
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity]
+
+  for (const piece of placements) {
+    const [px, py, pz] = piece.position
+    const [sx, sy, sz] = piece.scale
+    const cos = Math.cos(piece.rotationY)
+    const sin = Math.sin(piece.rotationY)
+
+    for (const dx of [-sx / 2, sx / 2]) {
+      for (const dy of [-sy / 2, sy / 2]) {
+        for (const dz of [-sz / 2, sz / 2]) {
+          const corner: [number, number, number] = [
+            px + dx * cos + dz * sin,
+            py + dy,
+            pz - dx * sin + dz * cos,
+          ]
+          for (let axis = 0; axis < 3; axis++) {
+            min[axis] = Math.min(min[axis], corner[axis])
+            max[axis] = Math.max(max[axis], corner[axis])
+          }
+        }
+      }
+    }
+  }
+
+  // An empty wall still has to hand the camera something finite.
+  for (let axis = 0; axis < 3; axis++) {
+    if (!Number.isFinite(min[axis])) min[axis] = 0
+    if (!Number.isFinite(max[axis])) max[axis] = 0
+  }
+  return { min, max }
+}
+
 export function deriveWall(
   config: WallConfig,
   catalog: CatalogEntry[] = WALL_CATALOG,
@@ -298,6 +334,7 @@ export function deriveWall(
   return {
     sku,
     colorway,
+    boundsFt: boundsOf([...blocks, ...capPieces]),
     cap,
     courses,
     runLengthIn,

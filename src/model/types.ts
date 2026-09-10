@@ -133,6 +133,12 @@ export type DerivedWall = {
    * setback in each axis per course (SPEC §8.7).
    */
   cornerVertexIn: { x: number; z: number } | null
+  /**
+   * World bounds of everything drawn, both runs and caps, in scene units. The
+   * camera fits the wall's own bounding box (SPEC §13) and the wall stopped
+   * being one run in block 4A.
+   */
+  boundsFt: { min: [number, number, number]; max: [number, number, number] }
   blocks: BlockPlacement[]
   /** The same objects as `blocks`, grouped so the scene never has to sort. */
   courseBlocks: BlockPlacement[][]

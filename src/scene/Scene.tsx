@@ -84,15 +84,20 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
   const safeLeft = useViewport((s) => s.safeRect.left)
   const safeTop = useViewport((s) => s.safeRect.top)
 
-  const runFt = inToFt(derived.runLengthIn)
-  const heightFt = inToFt(derived.totalHeightIn)
-  const depthFt = inToFt(derived.sku.depthIn + derived.topSetbackIn)
+  const bounds = derived.boundsFt
+  const [minX, minY, minZ] = bounds.min
+  const [maxX, maxY, maxZ] = bounds.max
 
   useLayoutEffect(() => {
     if (!('isPerspectiveCamera' in camera) || !camera.isPerspectiveCamera) return
 
-    // The target is the wall's box, not the terrain's.
-    const target = new Vector3(runFt / 2, heightFt / 2, -depthFt / 2)
+    // The target is the wall's own box, not the terrain's, and since block 4A
+    // that box covers both runs and the caps rather than runA alone.
+    const target = new Vector3(
+      (minX + maxX) / 2,
+      (minY + maxY) / 2,
+      (minZ + maxZ) / 2,
+    )
 
     // Fit on both axes and take the constraining one (SPEC §13). Width alone
     // passed at 0.69 twice while the picture failed, because a long low wall in
@@ -106,9 +111,9 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
     // Half extents of the wall's box on the screen axes, in feet.
     let halfAcross = 0
     let halfUp = 0
-    for (const x of [0, runFt]) {
-      for (const y of [0, heightFt]) {
-        for (const z of [0, -depthFt]) {
+    for (const x of [minX, maxX]) {
+      for (const y of [minY, maxY]) {
+        for (const z of [minZ, maxZ]) {
           const corner = new Vector3(x, y, z).sub(target)
           halfAcross = Math.max(halfAcross, Math.abs(corner.dot(right)))
           halfUp = Math.max(halfUp, Math.abs(corner.dot(up)))
@@ -161,9 +166,9 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
     let maxNdcX = -Infinity
     let minNdcY = Infinity
     let maxNdcY = -Infinity
-    for (const x of [0, runFt]) {
-      for (const y of [0, heightFt]) {
-        for (const z of [0, -depthFt]) {
+    for (const x of [minX, maxX]) {
+      for (const y of [minY, maxY]) {
+        for (const z of [minZ, maxZ]) {
           const ndc = new Vector3(x, y, z).project(camera)
           minNdcX = Math.min(minNdcX, ndc.x)
           maxNdcX = Math.max(maxNdcX, ndc.x)
@@ -207,9 +212,12 @@ function CameraRig({ derived }: { derived: DerivedWall }) {
     safeHeight,
     safeLeft,
     safeTop,
-    runFt,
-    heightFt,
-    depthFt,
+    minX,
+    minY,
+    minZ,
+    maxX,
+    maxY,
+    maxZ,
   ])
 
   return null
