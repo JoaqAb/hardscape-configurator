@@ -21,6 +21,12 @@ import type {
 export const CAP_DEPTH_BONUS_IN = 2
 export const CAP_HEIGHT_IN = 3
 export const CAP_FRONT_OVERHANG_IN = 1
+/**
+ * A cap is a different piece and in the field it carries a different finish.
+ * Its colour is the block's colorway taken down a few percent, in one place, so
+ * no second colour enters the palette and no hex is ever hardcoded (SPEC §7).
+ */
+export const CAP_VALUE_FACTOR = 0.94
 
 export const WALL_CATALOG: CatalogEntry[] = [
   {
