@@ -58,7 +58,8 @@ if they are missing.
 
 ## Time invested
 
-About six hours across two evenings.
+About six and a half hours of work in a single day, one afternoon and one
+evening. The commit timestamps span longer than that because of breaks.
 
 ## A note on npm audit
 

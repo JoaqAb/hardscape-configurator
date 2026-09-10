@@ -9,7 +9,9 @@ Keep it short. It records state, not narrative.
 
 ## Current position
 
-**Block 2F closed.** Commits `4875fbb`, `98b0141`. Live. The scene is done.
+**Block 3A closed.** Commits `b86073c`, `3b93707`. Live. The spec is complete:
+every acceptance criterion in `docs/EXECUTION.md` has passed. What remains is
+`If time remains`.
 
 Live and current: `https://hardscape-configurator.hardscape-configurator.workers.dev`
 
@@ -31,9 +33,17 @@ Live and current: `https://hardscape-configurator.hardscape-configurator.workers
 - Block 2F (the site), `4875fbb`, `98b0141`. Finite retained landform derived in
   `model/site.ts`, `<ContactShadows />` removed with cause, §13's vertical
   framing target corrected.
+- Block 3 (lead capture, mobile page flow, README), `c14ffff`. A real row lands
+  in `public.leads`, the error path was exercised by aborting the request, and
+  the README is written.
+- Block 3A (roadmap integrity), `b86073c`, `3b93707`. The card now accounts for
+  all 22 planned items and its column sums to the pill's 85h. Three registry
+  labels corrected.
 - The 90 degree return is a locked registry row and lives in `If time remains`.
-- **Next**: block 3, lead capture and README. It carries the last two acceptance
-  criteria in `docs/EXECUTION.md`. Everything after it is `If time remains`.
+- **Next**: block 4, in `If time remains` order but reordered by risk. 4A is the
+  90 degree return, hard timeboxed, with the revert criterion in EXECUTION. 4B
+  is a visual pass over whatever geometry 4A leaves behind. Revertible risk
+  first, then the work that cannot fail badly.
 
 ## Where the scene landed
 
@@ -129,6 +139,27 @@ the app.
   being portaled, because mobile must keep rendering exactly what 2D shipped
   while desktop was restructured. `RoadmapList` is extracted so the registry has
   one rendering shared by both.
+- The lead form is entered from a `Send me this estimate` button beside the
+  estimated total, not from a `Request a quote` label: §9 is explicit that this
+  is not a quote. Mobile carries its own entry point, because the desktop bar is
+  not rendered below the breakpoint.
+- `config` jsonb carries the `WallConfig` plus `shareUrl`. It is the one derived
+  value stored beside its source, because §12 says the link is the lead and
+  whoever opens the row has to be able to open the wall.
+- The insert uses `.insert()` with no `.select()`. `anon` holds INSERT only and
+  there is no select policy, so asking for the row back fails by design (§11).
+- The form is `noValidate` and validation is ours. `type="email" required` fired
+  the browser's native bubbles before the submit handler, in the browser's UI
+  language, which put Spanish errors in an English UI and made the email checks
+  unreachable.
+- Both breakpoints mount a `LeadForm` behind one open flag, so the hidden
+  instance's outside-click handler was closing the visible one. Each instance
+  checks it is the visible one first. This is the cost of the dual-mount
+  decision above and it will recur with any future overlay.
+- The roadmap card's two subtotal rows are a plain `Subtotal` component, not
+  `LockedControl`. They are not controls, they have nothing to lock, and a
+  padlock would have added two more things that look like features to a count
+  that is exact.
 
 **Scene**
 
@@ -179,14 +210,6 @@ the app.
 
 ## Open items
 
-Owned by block 3:
-
-- SPEC §6 still describes `Scene.tsx` as "Canvas, lights, Environment,
-  ContactShadows, Bounds". Three of those five are gone.
-- At 390px the control card's scroll area is about one row. Mobile is stacked
-  with a fixed-height canvas (§13), so the card belongs in normal page flow and
-  must not inherit the desktop card's height cap.
-
 Accepted, no action:
 
 - The control card overflows 740px of frame height on desktop, so `Cap course`
@@ -227,9 +250,18 @@ A copied link reproduces the wall including a non-first colorway and caps off.
 Four sets of junk params fell back to defaults without throwing. 22 of 22 locked
 controls are inert and show a lock and an hour estimate.
 
-Roadmap pill reads `Roadmap · 22 planned · 85h`, both derived. Hand count: 19
-registry entries (family 5, geometry 5, business 5, platform 2, technical 2)
-plus 3 locked SKUs; 78 registry hours plus 7 SKU hours.
+Lead capture verified end to end. Row `c6913e1e-a290-422e-85bb-2c1b5876ac65`,
+created 2026-09-09 21:28:59 UTC: `config` holds the five `WallConfig` fields
+plus `shareUrl`, which reopens the same wall; `takeoff` holds 7 lines; `estimate`
+is 2497 and matches the bar. One row per submit, verified against a double
+click. Aborting the POST surfaced a readable sentence with the typed values
+intact. Over-long name and phone are rejected client-side and never reach
+Postgres.
+
+Roadmap pill reads `Roadmap · 22 planned · 85h`, both derived, and the expanded
+card accounts for all of it: 14 listed rows at 51h, plus subtotals of 5 product
+families at 27h and 3 wall styles at 7h, which live in the tabs and the style
+grid. 14 + 5 + 3 = 22 and 51 + 27 + 7 = 85.
 
 ## Framing measurements
 
