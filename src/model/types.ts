@@ -90,6 +90,12 @@ export type BlockPlacement = {
   scale: [number, number, number]
   /** 1 for a whole unit, < 1 where the run clipped it. */
   widthFraction: number
+  /**
+   * Multiplier on the colorway's value, within +/-3% (SPEC §8.5). The mean
+   * across a wall is exactly 1, so the rendered colour still matches the swatch
+   * that was clicked (§13, §1).
+   */
+  valueScale: number
   courseIndex: number
   indexInCourse: number
 }

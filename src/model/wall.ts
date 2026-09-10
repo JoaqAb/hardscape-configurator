@@ -29,6 +29,8 @@ import { degToRad, ftToIn, inToFt } from './units'
 /** Cosmetic variation, in inches and degrees (SPEC §8.5). */
 const POSITION_JITTER_IN = 0.15
 const ROTATION_JITTER_DEG = 0.6
+/** A real wall is never a flat colour, but the mean has to stay the colorway. */
+const VALUE_JITTER = 0.03
 
 /**
  * Real units are chamfered, so a wall shows a shadow line at every joint. We
@@ -201,6 +203,9 @@ export function deriveWall(
       const alongJitter = jitter(rand, POSITION_JITTER_IN) * scale
       const acrossJitter = jitter(rand, POSITION_JITTER_IN) * scale
       const rotationDeg = jitter(rand, ROTATION_JITTER_DEG) * scale
+      // Colour does not affect clearance, so a corner block takes it even
+      // though it is laid true for position.
+      const rawValue = jitter(rand, VALUE_JITTER)
       const turned = rotationBaseRad !== 0
 
       rowBlocks.push({
@@ -216,6 +221,7 @@ export function deriveWall(
           inToFt(sku.depthIn),
         ],
         widthFraction: fraction,
+        valueScale: 1 + rawValue,
         courseIndex: course,
         indexInCourse,
       })
@@ -265,6 +271,16 @@ export function deriveWall(
 
   const blocks = courseBlocks.flat()
 
+  // Centre the variation so its mean is exactly 1: the wall a customer sees has
+  // to average to the swatch they clicked, not to something near it.
+  if (blocks.length > 0) {
+    const meanScale =
+      blocks.reduce((sum, block) => sum + block.valueScale, 0) / blocks.length
+    for (const block of blocks) {
+      block.valueScale += 1 - meanScale
+    }
+  }
+
   const capPieces: BlockPlacement[] = []
   if (cap) {
     const capFrontZIn = -topSetbackIn + cap.overhangIn
@@ -300,6 +316,7 @@ export function deriveWall(
           inToFt(cap.depthIn),
         ],
         widthFraction: fraction,
+        valueScale: 1,
         courseIndex: courses,
         indexInCourse: capIndex,
       })

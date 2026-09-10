@@ -27,7 +27,11 @@ export function Wall({ derived }: { derived: DerivedWall }) {
           metalness={0}
         />
         {derived.courseBlocks.map((placements, course) => (
-          <BlockCourse key={course} placements={placements} />
+          <BlockCourse
+            key={course}
+            placements={placements}
+            colorHex={derived.colorway.hex}
+          />
         ))}
       </Instances>
 
