@@ -29,12 +29,12 @@ const MIN_CAMERA_DISTANCE_FT = 14
  * and handed to scene.background: no geometry, no shader, no network, nothing
  * per frame.
  *
- * The horizon stop is held under the measured luminance of the wall face,
- * because §13 keeps the wall face the lightest thing in frame. That ceiling is
- * what makes this sky as dark as it is.
+ * The horizon stop clears 1.6 times the turf's measured luminance, which is what
+ * makes a horizon exist. It is not bound by the wall face: §13's lightest-object
+ * rule is about the materials in the scene, and the sky is not one of them.
  */
-const SKY_HORIZON = '#5c5f64'
-const SKY_ZENITH = '#3a3e46'
+const SKY_HORIZON = '#b6bbc0'
+const SKY_ZENITH = '#8f969d'
 /**
  * Where the horizon stop lands down the frame. The background is drawn in screen
  * space, so its own bottom edge sits behind the ground: without this the only

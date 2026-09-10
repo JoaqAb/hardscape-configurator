@@ -460,9 +460,15 @@ A two colour vertical gradient stands behind the scene as sky. **No decorative
 gradients** above is about the UI chrome. A sky is not decoration, it is what is
 above the horizon, and without one the ground and the sky are a single field of
 the same value and the image has no horizon at all. It fetches nothing and costs
-nothing per frame, and it is the only gradient this file allows. Its brightest
-stop, at the horizon, must not exceed the measured luminance of the wall face,
-because the wall face stays the lightest, highest contrast object in frame.
+nothing per frame, and it is the only gradient this file allows. Its brightest stop, at the horizon, is **not** bound by the wall face. The rule
+that the wall face is the lightest, highest contrast object in frame is about the
+materials in the scene: the turf, the retained fill and the wall itself. The sky
+is not a material, it is what is beyond the horizon, and in every photograph of a
+finished wall it is brighter than the wall. The horizon stop must measure **at
+least 1.6 times the turf's luminance**, so that a horizon exists at all, and the
+zenith stop stays below the horizon stop. Cool neutral, low saturation: an
+overcast sky, not a colour feature. The wall face remains the lightest
+**material** in frame, and the turf, fill and wall face values do not move.
 
 Scene lighting must be **fully local**. Do not use `<Environment preset="..." />`
 or any drei helper that fetches an HDRI or any other asset from a CDN at
