@@ -251,7 +251,32 @@ function Rig({ derived }: { derived: DerivedWall }) {
   const runFt = inToFt(derived.runLengthIn)
   const heightFt = inToFt(derived.totalHeightIn)
   const centreX = runFt / 2
+  // Placement of the key, unchanged. The light does not move.
   const extent = Math.max(runFt, heightFt) * 0.7 + 10
+
+  // The shadow camera is fitted to the derived bounds instead, the same fix
+  // item 0 made for the view camera: a heuristic on runA's length knows nothing
+  // about the return. Radius from the light's aim point to the furthest corner
+  // of everything drawn covers the wall whatever shape it is.
+  const aim = [centreX, heightFt / 2, 0] as const
+  const { min, max } = derived.boundsFt
+  let shadowRadius = 0
+  for (const x of [min[0], max[0]]) {
+    for (const y of [min[1], max[1]]) {
+      for (const z of [min[2], max[2]]) {
+        shadowRadius = Math.max(
+          shadowRadius,
+          Math.hypot(x - aim[0], y - aim[1], z - aim[2]),
+        )
+      }
+    }
+  }
+  shadowRadius += 1
+  const lightDistance = Math.hypot(
+    centreX - runFt * 0.8 - aim[0],
+    heightFt + extent * 0.95 - aim[1],
+    extent * 0.75 - aim[2],
+  )
 
   return (
     <>
@@ -263,13 +288,13 @@ function Rig({ derived }: { derived: DerivedWall }) {
         intensity={1.25}
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0006}
-        shadow-camera-left={-extent}
-        shadow-camera-right={extent}
-        shadow-camera-top={extent}
-        shadow-camera-bottom={-extent}
+        shadow-camera-left={-shadowRadius}
+        shadow-camera-right={shadowRadius}
+        shadow-camera-top={shadowRadius}
+        shadow-camera-bottom={-shadowRadius}
         shadow-camera-near={0.5}
-        shadow-camera-far={extent * 6}
-        target-position={[centreX, heightFt / 2, 0]}
+        shadow-camera-far={lightDistance + shadowRadius}
+        target-position={[aim[0], aim[1], aim[2]]}
       />
 
       {/* Rim light from the opposite side, dim: it separates the wall from the
